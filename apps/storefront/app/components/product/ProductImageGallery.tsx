@@ -25,24 +25,25 @@ const GalleryImagesRow: FC<{ galleryImages: ProductGalleryImage[] }> = memo(({ g
       {galleryImages.map((image, imageIndex) => (
         <Tab
           key={image.id}
-          className={
-            'relative mb-0 mr-2 inline-block h-16 w-16 cursor-pointer snap-start whitespace-nowrap rounded-md bg-white text-sm font-bold uppercase text-gray-900 last:mb-0 last:mr-0 hover:bg-gray-50 focus:outline-none focus:ring-0 lg:mb-2 lg:mr-0 lg:whitespace-normal'
-          }
+          className="relative mb-0 mr-2 inline-block h-16 w-16 cursor-pointer snap-start whitespace-nowrap text-sm last:mb-0 last:mr-0 focus:outline-none focus:ring-0 lg:mb-2 lg:mr-0 lg:whitespace-normal overflow-hidden"
+          style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}
         >
           {({ selected }) => (
             <>
               <span className="sr-only">{image.name}</span>
-              <span className="absolute inset-0 overflow-hidden rounded-none">
+              <span className="absolute inset-0 overflow-hidden">
                 <Image
                   key={image.id}
                   src={image.url}
                   alt={image.alt || 'tab for image gallery'}
-                  className={'h-full w-full object-cover object-center grayscale-[40%] sepia-[20%] transition-all duration-500'}
+                  className="h-full w-full object-cover object-center sepia-aged transition-all duration-500"
                 />
               </span>
+              {/* Active border — brass */}
               <span
-                className={clsx('pointer-events-none absolute inset-0 rounded-none border border-[#2C1E16]/30', {
-                  '!border-[#B0894A] border-2': selected,
+                className={clsx('pointer-events-none absolute inset-0 transition-all duration-200', {
+                  'border-2 border-[#C9A962]': selected,
+                  'border border-[#4A3F35]': !selected,
                 })}
                 aria-hidden="true"
               />
@@ -66,21 +67,16 @@ export const ProductImageGallery: FC<ProductImageGalleryProps> = ({ product }) =
 
   const gallery: ProductGalleryImage[] =
     images?.length < 1 && thumbnail
-      ? [
-        {
-          id: 'thumbnail',
-          name: `Thumbnail for ${product.title}`,
-          url: thumbnail,
-          alt: product.description || product.title,
-        },
-      ]
+      ? [{ id: 'thumbnail', name: `Thumbnail for ${product.title}`, url: thumbnail, alt: product.description || product.title }]
       : (images as ProductGalleryImage[]);
 
   return (
     <TabGroup as="div" className="flex flex-col-reverse gap-4 lg:flex-row">
       <h2 className="sr-only">Images</h2>
+
+      {/* ── Thumbnail strip ── */}
       {gallery.length > 1 && (
-        <div className="flex-grow-1 relative mx-auto mb-12 block h-8 w-full lg:mb-0 lg:h-auto lg:max-w-[68px]">
+        <div className="flex-grow-1 relative mx-auto mb-4 block h-8 w-full lg:mb-0 lg:h-auto lg:max-w-[68px]">
           <TabList
             ref={scrollableDivRef}
             className="absolute bottom-0 left-0 right-0 top-0 h-20 snap-both snap-proximity overflow-x-auto whitespace-nowrap pb-3 lg:-right-4 lg:bottom-0 lg:h-auto lg:overflow-y-auto lg:overflow-x-hidden lg:whitespace-normal lg:px-0 lg:py-0"
@@ -104,41 +100,48 @@ export const ProductImageGallery: FC<ProductImageGalleryProps> = ({ product }) =
         </div>
       )}
 
+      {/* ── Main image panel ── */}
       <TabPanels className="flex-grow-1 w-full">
-        <div className="aspect-1 relative bg-[#F5F2EB]">
+        <div className="aspect-1 relative" style={{ backgroundColor: '#1C1714' }}>
           {gallery.length > 0 ? (
             gallery.map((image, imageIndex) => (
               <TabPanel
                 key={image.id}
-                className="group relative h-full w-full cursor-pointer overflow-hidden rounded-none"
+                className="group relative h-full w-full cursor-pointer overflow-hidden"
                 onClick={() => setLightboxIndex(imageIndex)}
               >
                 <Image
                   key={image.id}
-                  style={{
-                    viewTransitionName: 'product-thumbnail',
-                  }}
+                  style={{ viewTransitionName: 'product-thumbnail' }}
                   src={image.url}
                   alt={image.alt || 'selected image for product'}
-                  className="absolute h-full w-full object-cover object-center rounded-none border border-[#2C1E16] grayscale-[30%] sepia-[20%] group-hover:grayscale-0 transition-all duration-1000 ease-out"
+                  className="absolute h-full w-full object-cover object-center sepia-aged group-hover:scale-[1.02] transition-all duration-700 ease-out"
                 />
-                <div className="absolute right-4 top-4 flex items-center justify-center rounded-none bg-[#2C1E16] p-2 opacity-0 transition-all duration-500 hover:!opacity-100 group-hover:opacity-70 border border-[#B0894A]/50">
-                  <MagnifyingGlassPlusIcon className="h-6 w-6 text-[#F5F2EB]" />
+                {/* Zoom button */}
+                <div
+                  className="absolute right-4 top-4 flex items-center justify-center p-2 opacity-0 transition-all duration-300 group-hover:opacity-100"
+                  style={{ backgroundColor: '#251E19', border: '1px solid #C9A962' }}
+                >
+                  <MagnifyingGlassPlusIcon className="h-5 w-5" style={{ color: '#C9A962' }} aria-hidden="true" />
                 </div>
+
+                {/* Subtle vignette on image */}
+                <div className="absolute inset-0 pointer-events-none vignette-overlay opacity-30" aria-hidden="true" />
               </TabPanel>
             ))
           ) : (
-            <div className="absolute flex h-full w-full items-center justify-center border-b border-[#2C1E16] object-cover object-center rounded-none sm:border text-[#2C1E16]/50 font-body italic">
-              Tak Ada Gambar
+            <div
+              className="absolute flex h-full w-full items-center justify-center border border-[#4A3F35] italic"
+              style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
+            >
+              No Image Available
             </div>
           )}
         </div>
       </TabPanels>
+
       <LightboxGallery
-        images={gallery.map((image) => ({
-          src: image.url,
-          alt: image.alt || 'Product image',
-        }))}
+        images={gallery.map((image) => ({ src: image.url, alt: image.alt || 'Product image' }))}
         lightBoxIndex={lightboxIndex}
         setLightBoxIndex={setLightboxIndex}
       />

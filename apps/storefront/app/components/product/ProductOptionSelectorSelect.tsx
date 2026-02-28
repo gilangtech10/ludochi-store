@@ -73,18 +73,20 @@ export const ProductOptionSelectorSelect: FC<ProductOptionSelectorProps> = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={option.id} className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B0894A]">
+      <label
+        htmlFor={option.id}
+        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A962' }}
+      >
         {option.title}
       </label>
       <select
         {...register(`options.${option.id}`)}
         id={option.id}
-        className="form-select block w-full bg-transparent border border-[#2C1E16]/30 text-[#2C1E16] rounded-none py-3 px-4 font-display italic focus:border-[#B0894A] focus:ring focus:ring-[#B0894A]/20 focus:ring-opacity-50 transition-colors"
+        className="academia-input focus:border-[#C9A962] focus:ring-[#C9A962]/20"
         defaultValue={value}
-      // onChange={handleChange}
       >
         {formattedOptions.map((optValue, valueIndex) => (
-          <option key={valueIndex} value={optValue.value} className="font-body not-italic">
+          <option key={valueIndex} value={optValue.value} style={{ backgroundColor: '#251E19', color: '#E8DFD4' }}>
             {optValue.label || optValue.value}
           </option>
         ))}

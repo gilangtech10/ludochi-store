@@ -1,5 +1,4 @@
 import { URLAwareNavLink } from '@app/components/common/link';
-import { SectionHeading } from '@app/components/sections/SectionHeading';
 import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
 import { CustomAction } from '@libs/types';
 import { FC, PropsWithChildren, ReactNode } from 'react';
@@ -16,13 +15,25 @@ export const ProductListHeader: FC<ProductListHeaderProps> = ({ heading, childre
   if (!(heading || children) && !text && !actions?.length && !customActions) return null;
 
   return (
-    <header className="mb-4 flex flex-col items-start xs:items-end gap-2 md:mb-6 xs:flex-row md:gap-4 lg:mb-8">
+    <header className="mb-6 flex flex-col items-start xs:items-end gap-2 md:mb-8 xs:flex-row md:gap-4">
       <div className="w-full flex-1 md:w-auto">
-        <div className="inline-grid !max-w-prose gap-6">
+        <div className="inline-grid gap-3">
           {(heading || children) && (
-            <SectionHeading className="font-italiana font-normal tracking-wider">{heading || children}</SectionHeading>
+            <>
+              <span className="academia-label block">— Curated Selection —</span>
+              <h2
+                className="text-3xl md:text-4xl"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontStyle: 'italic', color: '#E8DFD4' }}
+              >
+                {heading || children}
+              </h2>
+            </>
           )}
-          {text && <div>{text}</div>}
+          {text && (
+            <p style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.65)', fontStyle: 'italic' }}>
+              {text}
+            </p>
+          )}
         </div>
       </div>
 
@@ -30,11 +41,16 @@ export const ProductListHeader: FC<ProductListHeaderProps> = ({ heading, childre
         <div className="flex grow-0 items-center gap-2">
           {actions.map(({ label, url }, index) => {
             if (!label) return null;
-
             return (
-              <URLAwareNavLink key={index} url={url} prefetch="render" className="flex items-center hover:underline">
+              <URLAwareNavLink
+                key={index}
+                url={url}
+                prefetch="render"
+                className="flex items-center transition-colors"
+                style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C9A962' }}
+              >
                 {label}
-                <ArrowRightIcon className="ml-1.5 h-4" />
+                <ArrowRightIcon className="ml-1.5 h-3.5" />
               </URLAwareNavLink>
             );
           })}
@@ -45,3 +61,4 @@ export const ProductListHeader: FC<ProductListHeaderProps> = ({ heading, childre
     </header>
   );
 };
+

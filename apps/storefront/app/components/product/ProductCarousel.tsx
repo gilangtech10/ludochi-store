@@ -1,5 +1,3 @@
-import { ScrollArrowButtons } from '@app/components/common/buttons/ScrollArrowButtons';
-import { useScrollArrows } from '@app/hooks/useScrollArrows';
 import { StoreProduct } from '@medusajs/types';
 import clsx from 'clsx';
 import { type FC, memo } from 'react';
@@ -11,46 +9,29 @@ import { ProductListItem } from './ProductListItem';
 export interface ProductCarouselProps {
   products?: StoreProduct[];
   className?: string;
-  renderItem?: FC<ProductListItemProps>;
+  itemClassName?: string;
 }
 
-export const ProductRow: FC<{ products: StoreProduct[] }> = memo(({ products }) => {
+export const ProductCarousel: FC<ProductCarouselProps> = memo(({ products, className, itemClassName }) => {
+  if (!products) {
+    return <ProductCarouselSkeleton length={4} />;
+  }
+
   return (
-    <>
+    <div className="w-full overflow-x-auto snap-x snap-mandatory flex gap-4 md:gap-6 pb-8 hide-scrollbar">
       {products.map((product) => (
         <div
           key={product.id}
-          // Note: not sure if there is a better way to handle the width of these items, but these match closely to our grid layout
-          className="xs:w-[47.5%] xs:snap-start mr-6 inline-block w-[100%] snap-center last:mr-0 sm:mr-6 sm:snap-start md:w-[31.2%] xl:mr-8 xl:w-[23%]"
+          className="snap-start flex-none w-[65vw] sm:w-[35vw] md:w-[25vw] lg:w-[20vw] xl:w-[16vw]"
         >
-          <NavLink prefetch="viewport" to={`/products/${product.handle}`} viewTransition>
+          <NavLink prefetch="viewport" to={`/products/${product.handle}`} className="outline-none block h-full" viewTransition>
             {({ isTransitioning }) => <ProductListItem isTransitioning={isTransitioning} product={product} />}
           </NavLink>
         </div>
       ))}
-    </>
-  );
-});
-
-export const ProductCarousel: FC<ProductCarouselProps> = ({ products, className }) => {
-  const { scrollableDivRef, ...scrollArrowProps } = useScrollArrows({
-    buffer: 100,
-    resetOnDepChange: [products],
-  });
-
-  if (!products) return <ProductCarouselSkeleton length={4} />;
-
-  return (
-    <div className={clsx('product-carousel relative', className)}>
-      <div
-        ref={scrollableDivRef}
-        className="w-full snap-both snap-mandatory overflow-x-auto whitespace-nowrap pb-2 sm:snap-proximity"
-      >
-        <ProductRow products={products} />
-      </div>
-      <ScrollArrowButtons className="-mt-12" {...scrollArrowProps} />
     </div>
   );
-};
+});
+ProductCarousel.displayName = 'ProductCarousel';
 
 export default ProductCarousel;

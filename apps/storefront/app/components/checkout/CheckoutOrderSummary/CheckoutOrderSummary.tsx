@@ -15,16 +15,24 @@ export const CheckoutOrderSummary: FC<CheckoutOrderSummaryProps> = ({ submitButt
   if (!cart) return null;
 
   return (
-    <div className="my-0 rounded-none border border-[#2C1E16]/30 bg-[#F5F2EB]/50 backdrop-blur-sm shadow-none relative">
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cfilter id=\"noiseFilter\"%3E%3CfeTurbulence type=\"fractalNoise\" baseFrequency=\"0.85\" numOctaves=\"3\" stitchTiles=\"stitch\"/%3E%3C/filter%3E%3Crect width=\"100%25\" height=\"100%25\" filter=\"url(%23noiseFilter)\"/%3E%3C/svg%3E")' }}></div>
+    <div className="my-0 relative" style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-0 mix-blend-overlay"
+        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, opacity: 0.04 }}
+      />
       <div className="relative z-10">
-        <h3 className="sr-only">Pesanan Anda</h3>
+        <h3 className="sr-only">Your Order</h3>
         <CheckoutOrderSummaryItems cart={cart} name={name} />
         <CheckoutOrderSummaryTotals
           cart={cart as StoreCart & { promotions: PromotionDTO[] }}
           shippingOptions={shippingOptions}
         />
-        {submitButton && <div className="border-t border-[#2C1E16]/30 p-4 sm:p-6">{submitButton}</div>}
+        {submitButton && (
+          <div className="p-4 sm:p-6" style={{ borderTop: '1px solid #4A3F35' }}>
+            {submitButton}
+          </div>
+        )}
       </div>
     </div>
   );

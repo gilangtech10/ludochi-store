@@ -82,33 +82,50 @@ export const ProductOptionSelectorRadio: FC<ProductOptionSelectorProps> = ({
               className={({ checked, disabled }) =>
                 clsx(
                   'group',
-                  checked ? 'border-[#B0894A] bg-[#B0894A]/5 ring-1 ring-[#B0894A]' : 'bg-transparent border-[#2C1E16]/30',
-                  'relative col-span-1 flex h-full cursor-pointer flex-col justify-between rounded-none border px-4 py-3 shadow-none hover:border-[#B0894A] transition-colors focus:outline-none',
-                  disabled ? 'opacity-50 cursor-not-allowed' : '',
+                  checked
+                    ? 'border-[#C9A962] ring-1 ring-[#C9A962]/50'
+                    : 'border-[#4A3F35] hover:border-[#C9A962]/50',
+                  'relative col-span-1 flex h-full cursor-pointer flex-col justify-between border px-4 py-3 shadow-none transition-colors duration-200 focus:outline-none',
+                  disabled ? 'opacity-40 cursor-not-allowed' : '',
                 )
               }
+              style={{ backgroundColor: '#251E19' }}
             >
               {({ checked }) => (
                 <Label as="div" className="flex items-center w-full cursor-pointer">
                   {/* Option value on the left */}
                   <div className="flex-grow">
-                    <span className={clsx('text-base font-display font-medium', checked ? 'text-[#B0894A]' : 'text-[#2C1E16]')}>
+                    <span
+                      className="text-base"
+                      style={{ fontFamily: 'var(--font-display)', color: checked ? '#C9A962' : '#E8DFD4' }}
+                    >
                       {optionValue.value}
                     </span>
-                    {optionValue.disabled && <span className="text-xs text-[#2C1E16]/50 italic ml-2">(habis)</span>}
+                    {optionValue.disabled && (
+                      <span className="text-xs italic ml-2" style={{ color: '#9C8B7A' }}>(sold out)</span>
+                    )}
                   </div>
 
-                  {/* Price information and check icon on the right */}
+                  {/* Price + check icon on the right */}
                   <div className="flex items-center">
                     {priceDisplay && (
                       <div className="text-right">
-                        <span className="text-sm font-body italic text-[#2C1E16]/70">{priceDisplay}</span>
+                        <span className="text-sm italic" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
+                          {priceDisplay}
+                        </span>
                         {discountDisplay && (
-                          <span className="ml-1 text-xs font-display font-medium text-[#B0894A]">({discountDisplay})</span>
+                          <span
+                            className="ml-1 text-xs"
+                            style={{ fontFamily: 'var(--font-label)', color: '#C9A962' }}
+                          >
+                            ({discountDisplay})
+                          </span>
                         )}
                       </div>
                     )}
-                    {checked && <CheckCircleIcon className="text-[#B0894A] h-5 w-5 ml-3" aria-hidden="true" />}
+                    {checked && (
+                      <CheckCircleIcon className="h-5 w-5 ml-3" style={{ color: '#C9A962' }} aria-hidden="true" />
+                    )}
                   </div>
                 </Label>
               )}

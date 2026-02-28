@@ -13,23 +13,42 @@ import { CartDrawerItem } from './CartDrawerItem';
 
 // Cart Drawer Header Component
 const CartDrawerHeader: FC<{ itemCount: number; onClose: () => void }> = ({ itemCount, onClose }) => (
-  <div className="flex items-start justify-between border-b border-[#2C1E16]/20 pb-4">
-    <DialogTitle className="text-2xl font-display font-medium italic text-[#2C1E16]">
-      Baki Menu{' '}
+  <div className="flex items-start justify-between pb-4" style={{ borderBottom: '1px solid #4A3F35' }}>
+    <DialogTitle
+      className="text-2xl tracking-tight"
+      style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontStyle: 'italic', color: '#E8DFD4' }}
+    >
+      Your Selection{' '}
       {itemCount > 0 && (
-        <span className="pl-2 font-body not-italic text-sm text-[#B0894A]">
-          ({itemCount} porsi)
+        <span
+          className="pl-2 not-italic text-sm"
+          style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', color: '#C9A962' }}
+        >
+          ({itemCount} {itemCount === 1 ? 'item' : 'items'})
         </span>
       )}
     </DialogTitle>
     <div className="ml-3 flex h-7 items-center">
-      <IconButton icon={XMarkIcon} onClick={onClose} className="-m-2 text-[#2C1E16] hover:text-[#B0894A] transition-colors" aria-label="Tutup Panel" />
+      <IconButton
+        icon={XMarkIcon}
+        onClick={onClose}
+        className="-m-2 transition-colors"
+        style={{ color: '#9C8B7A' }}
+        aria-label="Close cart"
+      />
     </div>
   </div>
 );
 
 // Cart Drawer Empty Component
-const CartDrawerEmpty: FC = () => <p className="text-center font-body italic text-sm text-[#2C1E16]/70 mt-8">Tampaknya bakimu masih kosong!</p>;
+const CartDrawerEmpty: FC = () => (
+  <p
+    className="text-center italic text-sm mt-8"
+    style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
+  >
+    Your selection is currently empty.
+  </p>
+);
 
 // Cart Drawer Loading Component
 const CartDrawerLoading: FC<{ className?: string }> = ({ className }) => (
@@ -59,7 +78,7 @@ const CartDrawerItems: FC<{
   isRemovingItemId?: string;
   currencyCode: string;
 }> = ({ items, isRemovingItemId, currencyCode }) => (
-  <ul className="-my-6 divide-y divide-[#2C1E16]/20 list-none mt-2">
+  <ul className="-my-6 list-none mt-2" style={{ borderColor: '#4A3F35' }}>
     {items.map((item) => (
       <CartDrawerItem key={item.id} isRemoving={isRemovingItemId === item.id} item={item} currencyCode={currencyCode} />
     ))}
@@ -103,39 +122,42 @@ const CartDrawerFooter: FC<{
   onCheckout: () => void;
   onClose: () => void;
 }> = ({ cart, currencyCode, itemCount, navigatingToCheckout, onCheckout, onClose }) => (
-  <div className="border-t border-[#2C1E16]/30 px-4 py-6 sm:px-6 z-10 bg-[#F5F2EB]/80 backdrop-blur-sm">
-    <div className="flex justify-between items-end text-base font-display font-medium text-[#2C1E16]">
-      <p className="text-sm uppercase tracking-widest text-[#B0894A] font-bold">Total Mahar</p>
+  <div
+    className="px-4 py-6 sm:px-6 z-10"
+    style={{ borderTop: '1px solid #4A3F35', backgroundColor: '#1C1714' }}
+  >
+    <div className="flex justify-between items-end" style={{ fontFamily: 'var(--font-display)', color: '#E8DFD4' }}>
+      <p
+        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A962' }}
+      >
+        Order Total
+      </p>
       <p className="text-2xl">
         {cart
           ? formatCartSubtotal(cart)
-          : formatPrice(0, {
-            currency: currencyCode,
-          })}
+          : formatPrice(0, { currency: currencyCode })}
       </p>
     </div>
-    <p className="mt-2 font-body text-xs italic text-[#2C1E16]/70 hidden">Ongkos kirim dan pajak dihitung saat kasir.</p>
     <div className="mt-8">
       <Button
         variant="primary"
         disabled={itemCount === 0 || navigatingToCheckout}
         onClick={onCheckout}
-        className="group relative !h-12 w-full !text-base font-display italic tracking-wide !bg-[#2C1E16] text-[#F5F2EB] !border !border-[#2C1E16] !rounded-none hover:!bg-[#F5F2EB] hover:!text-[#2C1E16] cursor-pointer transition-all duration-500 overflow-hidden"
+        className="btn-brass engraved !h-12 w-full !text-base cursor-pointer"
       >
-        <div className="absolute inset-0 border border-[#B0894A] m-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-        <span className="relative z-10 flex items-center justify-center">
-          {navigatingToCheckout ? 'Menuju Kasir...' : 'Lanjut ke Kasir'}
-        </span>
+        {navigatingToCheckout ? 'Redirecting…' : 'Proceed to Checkout'}
       </Button>
     </div>
-    <div className="mt-6 flex justify-center text-center font-body text-sm text-[#2C1E16]/70">
-      <p>
-        atau{' '}
-        <ButtonLink size="sm" onClick={onClose} className="!text-[#B0894A] hover:!text-[#2C1E16] transition-colors italic">
-          <div>
-            Lanjut Memilih Menu{` `}
-            <span aria-hidden="true">&rarr;</span>
-          </div>
+    <div className="mt-6 flex justify-center text-center">
+      <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#9C8B7A' }}>
+        or{' '}
+        <ButtonLink
+          size="sm"
+          onClick={onClose}
+          className="italic transition-colors"
+          style={{ color: '#C9A962' }}
+        >
+          Continue Browsing <span aria-hidden="true">&rarr;</span>
         </ButtonLink>
       </p>
     </div>
@@ -202,9 +224,13 @@ export const CartDrawer: FC = () => {
               transition
               className="pointer-events-auto w-screen max-w-md transform duration-500 ease-in-out data-[closed]:translate-x-full"
             >
-              <div className="flex h-full flex-col overflow-y-scroll bg-[#F5F2EB] selection:bg-[#B0894A] selection:text-[#F5F2EB] shadow-xl border-l-4 border-double border-[#2C1E16]/40 relative">
-                {/* Global Paper Texture Overlay */}
-                <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+              <div className="flex h-full flex-col overflow-y-scroll selection:bg-[#C9A962] selection:text-[#1C1714] shadow-xl relative" style={{ backgroundColor: '#1C1714', borderLeft: '1px solid #4A3F35' }}>
+                {/* Paper Texture overlay */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, opacity: 0.03 }}
+                />
 
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 z-10">

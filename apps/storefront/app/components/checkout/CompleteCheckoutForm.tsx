@@ -126,7 +126,8 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
   const PaymentSubmitButton = () => (
     <SubmitButton
       form={id}
-      className="w-full lg:w-auto"
+      className="btn-brass engraved w-full lg:w-auto !rounded-none !px-12"
+      style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem' }}
       disabled={isSubmitting || isCartMutating || (!sameAsShipping && !billingAddress) || !hasShippingMethod}
     >
       {isSubmitting ? 'Confirming...' : (submitMessage ?? 'Confirm & Pay')}
@@ -142,7 +143,7 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
           <TextField type="hidden" name="cartId" value={cart.id} />
           <TextField type="hidden" name="providerId" value={providerId} />
 
-          <h3 className="text-lg font-bold text-gray-900">Billing address</h3>
+          <h3 className="academia-label mt-6 mb-2">Billing address</h3>
 
           <Checkbox className="my-4" name="sameAsShipping" label="Same as shipping address" />
 

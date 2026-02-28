@@ -127,11 +127,11 @@ export default function CheckoutIndexRoute() {
     return (
       <Empty
         icon={ShoppingCartIcon}
-        title="No items in your cart."
-        description="Add items to your cart"
+        title="Your cart is empty."
+        description="Add items to your cart to proceed"
         action={
-          <Button variant="primary" as={(buttonProps) => <Link to="/products" {...buttonProps} />} className="!bg-[#2C1E16] text-[#F5F2EB] !border !border-[#2C1E16] !rounded-none hover:!bg-[#F5F2EB] hover:!text-[#2C1E16] font-display italic tracking-wide transition-colors">
-            Mulai Belanja
+          <Button variant="primary" as={(buttonProps) => <Link to="/products" {...buttonProps} />} className="btn-brass engraved">
+            Browse the Catalogue
           </Button>
         }
       />
@@ -146,11 +146,30 @@ export default function CheckoutIndexRoute() {
         paymentProviders: paymentProviders,
       }}
     >
-      <section className="min-h-screen bg-[#F5F2EB] text-[#2C1E16] selection:bg-[#B0894A] selection:text-[#F5F2EB] relative pt-12 lg:pt-24 pb-24">
-        {/* Global Paper Texture Overlay */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+      <section
+        className="min-h-screen relative selection:bg-[#C9A962] selection:text-[#1C1714]"
+        style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
+      >
+        {/* Atmospheric overlays */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, opacity: 0.03 }}
+        />
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 vignette-overlay" />
 
         <div className="mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:max-w-7xl lg:px-8 lg:pb-24 lg:pt-16 relative z-10">
+          {/* Checkout page header */}
+          <div className="text-center mb-12 pt-8">
+            <div className="academia-label-row mb-4 max-w-[8rem] mx-auto">Finalise your order</div>
+            <h1
+              className="text-4xl md:text-5xl"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
+            >
+              The <em style={{ color: '#C9A962' }}>Checkout</em>
+            </h1>
+          </div>
+
           <div className="lg:grid lg:grid-cols-[4fr_3fr] lg:gap-x-12 xl:gap-x-16">
             <CheckoutFlow />
             <CheckoutSidebar />

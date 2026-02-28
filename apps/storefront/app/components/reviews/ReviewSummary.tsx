@@ -10,33 +10,39 @@ export interface ProductReviewSummaryProps {
   className?: string;
 }
 
-const ReviewRating: FC<{ rating: number; rating_count: number; count: number }> = ({ rating, rating_count, count }) => {
+const ReviewRating: FC<{ rating: number; rating_count: number; count: number }> = ({
+  rating,
+  rating_count,
+  count,
+}) => {
+  const pct = count > 0 ? Math.round((rating_count / count) * 100) : 0;
   return (
-    <div key={rating} className="flex items-center text-sm">
-      <dt className="flex flex-1 items-center">
-        <p className="w-3 font-medium text-gray-900">
-          {rating}
-          <span className="sr-only"> star reviews</span>
-        </p>
-        <div aria-hidden="true" className="ml-1 flex flex-1 items-center">
-          <StarIcon
-            className={clsx(count > 0 ? 'text-amber-400' : 'text-gray-300', 'h-5 w-5 flex-shrink-0')}
-            aria-hidden="true"
-          />
-
-          <div className="relative ml-3 flex-1">
-            <div className="h-3 rounded-full border border-gray-200 bg-gray-100" />
-            {count > 0 ? (
-              <div
-                className="absolute inset-y-0 rounded-full border border-amber-400 bg-amber-400"
-                style={{ width: `calc(${rating_count} / ${count} * 100%)` }}
-              />
-            ) : null}
-          </div>
+    <div key={rating} className="flex items-center text-sm gap-2">
+      <p
+        className="w-3 shrink-0"
+        style={{ fontFamily: 'var(--font-label)', fontSize: '0.65rem', letterSpacing: '0.1em', color: '#9C8B7A' }}
+      >
+        {rating}
+      </p>
+      <div aria-hidden="true" className="flex flex-1 items-center gap-1">
+        <StarIcon
+          className={clsx('h-4 w-4 shrink-0', count > 0 ? 'text-[#C9A962]' : 'opacity-30')}
+          style={{ color: count > 0 ? '#C9A962' : undefined }}
+        />
+        <div className="relative flex-1 h-2" style={{ backgroundColor: 'rgba(74,63,53,0.6)' }}>
+          {count > 0 && (
+            <div
+              className="absolute inset-y-0"
+              style={{ width: `${pct}%`, backgroundColor: '#C9A962', opacity: 0.7 }}
+            />
+          )}
         </div>
-      </dt>
-      <dd className="ml-3 w-10 text-right text-sm tabular-nums text-gray-900">
-        {Math.round((rating_count / count) * 100)}%
+      </div>
+      <dd
+        className="w-8 text-right tabular-nums shrink-0"
+        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.1em', color: '#9C8B7A' }}
+      >
+        {pct}%
       </dd>
     </div>
   );
@@ -47,23 +53,26 @@ export const ProductReviewSummary: FC<ProductReviewSummaryProps> = ({ stats, cou
     <div className={className}>
       {stats && (
         <>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900">Customer Reviews</h2>
+          <h2
+            className="text-2xl tracking-tight mb-4"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
+          >
+            Reader Reviews
+          </h2>
 
-          <div className="mt-3 flex items-center">
-            <div>
-              <div className="flex items-center">
-                <StarRating value={stats.average_rating as number} readOnly />
-              </div>
-              <p className="sr-only">{stats.average_rating} out of 5 stars</p>
-            </div>
-            <p className="ml-2 mt-1 text-sm text-gray-900">
+          <div className="mt-3 flex items-center gap-3">
+            <StarRating value={stats.average_rating as number} readOnly />
+            <p
+              className="italic"
+              style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: '#9C8B7A' }}
+            >
               Based on {count} review{count > 1 && 's'}
             </p>
           </div>
-          <div className="mt-4">
-            <h3 className="sr-only">Review data</h3>
 
-            <dl className="space-y-3">
+          <div className="mt-6">
+            <h3 className="sr-only">Rating distribution</h3>
+            <dl className="space-y-2.5">
               <ReviewRating rating={5} rating_count={stats.rating_count_5} count={count} />
               <ReviewRating rating={4} rating_count={stats.rating_count_4} count={count} />
               <ReviewRating rating={3} rating_count={stats.rating_count_3} count={count} />

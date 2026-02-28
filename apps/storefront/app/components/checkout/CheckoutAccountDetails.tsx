@@ -94,6 +94,8 @@ export const CheckoutAccountDetails = () => {
   };
 
   const shippingAddress = form.watch('shippingAddress');
+  // For the completed display, read from cart directly (form state is reset after submit)
+  const completedShippingAddress = medusaAddressToAddress(cart.shipping_address as MedusaAddress);
 
   useEffect(() => {
     if (isActiveStep && !isSubmitting && !hasErrors && isComplete) {
@@ -115,15 +117,15 @@ export const CheckoutAccountDetails = () => {
       </CheckoutSectionHeader>
 
       {!isActiveStep && isComplete && (
-        <AddressDisplay title="Shipping Address" address={shippingAddress} countryOptions={countryOptions} />
+        <AddressDisplay title="Shipping Address" address={completedShippingAddress} countryOptions={countryOptions} />
       )}
 
       {isActiveStep && (
         <>
           {customer?.email ? (
-            <p className="mt-2 text-sm mb-2">To get started, please select your shipping address.</p>
+            <p className="mt-2 text-sm mb-2" style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)', fontStyle: 'italic' }}>To get started, please select your shipping address.</p>
           ) : (
-            <p className="mt-2 text-sm mb-4">To get started, enter your email address.</p>
+            <p className="mt-2 text-sm mb-4" style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)', fontStyle: 'italic' }}>To get started, enter your email address.</p>
           )}
 
           <RemixFormProvider {...form}>
@@ -154,12 +156,21 @@ export const CheckoutAccountDetails = () => {
               <FormError />
 
               <Actions>
-                <SubmitButton disabled={isSubmitting || isCartMutating}>
+                <SubmitButton
+                  disabled={isSubmitting || isCartMutating}
+                  className="btn-brass engraved !rounded-none !px-10 !py-3"
+                  style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem' }}
+                >
                   {isSubmitting ? 'Saving...' : 'Save and continue'}
                 </SubmitButton>
 
                 {isComplete && (
-                  <Button disabled={isSubmitting} onClick={handleCancel}>
+                  <Button
+                    disabled={isSubmitting}
+                    onClick={handleCancel}
+                    className="!rounded-none !border-[#4A3F35] !bg-transparent !px-10 !py-3"
+                    style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem', color: '#9C8B7A' }}
+                  >
                     Cancel edit
                   </Button>
                 )}

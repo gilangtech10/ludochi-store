@@ -14,7 +14,6 @@ export const ProductReviewList: FC<ProductReviewListProps> = ({ productReviews }
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [currentGalleryImages, setCurrentGalleryImages] = useState<{ url: string; alt?: string; name?: string }[]>([]);
 
-  // Function to handle image click from any review
   const handleImageClick = (reviewImages: { url: string; alt?: string; name?: string }[], imageIndex: number) => {
     setCurrentGalleryImages(reviewImages);
     setLightboxIndex(imageIndex);
@@ -23,29 +22,44 @@ export const ProductReviewList: FC<ProductReviewListProps> = ({ productReviews }
   return (
     <div>
       {productReviews && productReviews.length > 0 && (
-        <div className="-my-12 divide-y divide-gray-200">
-          {productReviews.map((review, reviewIndex) => {
+        <div className="-my-12">
+          {productReviews.map((review) => {
             const galleryImages = (review.images || []).map((image) => ({
               url: image.url,
-              alt: "Customer's review image",
-              name: "Customer's review image",
+              alt: "Reader's review image",
+              name: "Reader's review image",
             }));
 
             return (
-              <div key={review.id} className="py-8">
-                <div className=" flex items-center justify-between">
-                  <h3 className="mr-2 text-sm font-bold ">{review.name ?? 'Anonymous'}</h3>
-                  <div className="mt-1 flex items-center pb-1">
+              <div
+                key={review.id}
+                className="py-9"
+                style={{ borderBottom: '1px solid rgba(74,63,53,0.5)' }}
+              >
+                {/* Reviewer header */}
+                <div className="flex items-center justify-between gap-4">
+                  <h3
+                    className="mr-2"
+                    style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4', fontSize: '1.05rem' }}
+                  >
+                    {review.name ?? 'Anonymous Reader'}
+                  </h3>
+                  <div className="flex items-center pb-1">
                     <StarRating value={review.rating ?? 0} readOnly />
                   </div>
-                  <p className="sr-only">{review.rating} out of 5 stars</p>
                 </div>
-                <time className="text-xs italic text-gray-900" dateTime={review.created_at}>
+
+                <time
+                  className="block mt-1 italic"
+                  dateTime={review.created_at}
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '0.8rem', color: '#9C8B7A' }}
+                >
                   {formatDate(new Date(review.created_at))}
                 </time>
 
                 <div
-                  className="mt-4 space-y-6 text-base italic text-gray-600"
+                  className="mt-4 space-y-4 italic leading-relaxed"
+                  style={{ fontFamily: 'var(--font-body)', fontSize: '0.95rem', color: 'rgba(232,223,212,0.75)' }}
                   dangerouslySetInnerHTML={{ __html: review.content }}
                 />
 
@@ -56,22 +70,31 @@ export const ProductReviewList: FC<ProductReviewListProps> = ({ productReviews }
                   />
                 )}
 
-                {/* Store Owner Response */}
-                {review.response && review.response.content && (
-                  <div className="mt-4 rounded-md bg-gray-50 p-4">
-                    <div className="flex items-center">
-                      <h4 className="text-sm font-medium text-gray-900">LuDo-Chi's Response</h4>
+                {/* Store response */}
+                {review.response?.content && (
+                  <div
+                    className="mt-5 p-4"
+                    style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <h4
+                        className="academia-label"
+                      >
+                        LuDo-Chi's Reply
+                      </h4>
                       {review.response.created_at && (
                         <time
-                          className="ml-2 text-xs italic text-gray-500"
+                          className="italic"
                           dateTime={String(review.response.created_at)}
+                          style={{ fontFamily: 'var(--font-body)', fontSize: '0.75rem', color: '#9C8B7A' }}
                         >
                           {formatDate(new Date(review.response.created_at))}
                         </time>
                       )}
                     </div>
                     <div
-                      className="mt-2 text-sm text-gray-700"
+                      className="mt-2 italic leading-relaxed"
+                      style={{ fontFamily: 'var(--font-body)', fontSize: '0.9rem', color: 'rgba(232,223,212,0.7)' }}
                       dangerouslySetInnerHTML={{ __html: review.response.content }}
                     />
                   </div>
@@ -82,7 +105,6 @@ export const ProductReviewList: FC<ProductReviewListProps> = ({ productReviews }
         </div>
       )}
 
-      {/* Single LightboxGallery for all reviews */}
       <LightboxGallery
         images={currentGalleryImages.map(({ url, ...image }) => ({ ...image, src: url }))}
         lightBoxIndex={lightboxIndex}

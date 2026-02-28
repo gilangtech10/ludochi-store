@@ -113,7 +113,11 @@ const ProductListBase: FC<{}> = () => {
 
 export const ProductList: FC<ProductListProps> = memo(({ className, heading, text, actions, ...props }) => {
   return (
-    <section className={clsx(`mkt-section relative overflow-x-hidden`, className)} {...props}>
+    <section
+      className={clsx(`mkt-section relative overflow-x-hidden`, className)}
+      style={{ backgroundColor: '#1C1714', borderTop: '1px solid #4A3F35', paddingTop: '4rem', paddingBottom: '4rem' }}
+      {...props}
+    >
       <div className="mkt-section__inner relative z-[2]">
         <Container>
           <ProductListHeader heading={heading} text={text} actions={actions} />

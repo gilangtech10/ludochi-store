@@ -15,7 +15,7 @@ import {
 import { formatPrice } from '@libs/util/prices';
 import { StoreCart, StoreCartShippingOption } from '@medusajs/types';
 import { BaseCartShippingMethod } from '@medusajs/types/dist/http/cart/common';
-import { FC, Fragment, useEffect, useMemo } from 'react';
+import { FC, Fragment, useEffect, useMemo, useRef } from 'react';
 import { useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
 import { StripeSecurityImage } from '../images/StripeSecurityImage';
@@ -52,6 +52,7 @@ export const CheckoutDeliveryMethod: FC = () => {
   const hasCompletedAccountDetails = checkAccountDetailsComplete(cart);
   const shippingOptionsByProfile = useMemo(() => getShippingOptionsByProfile(shippingOptions), [shippingOptions]);
   const isComplete = useMemo(() => checkDeliveryMethodComplete(cart, shippingOptions), [cart, shippingOptions]);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const defaultValues: ChooseCheckoutShippingMethodsFormData = useMemo(
     () => getDefaultValues(cart, shippingOptionsByProfile),
@@ -96,10 +97,10 @@ export const CheckoutDeliveryMethod: FC = () => {
 
               return (
                 <Fragment key={id}>
-                  <dt className={`${shippingMethodIndex > 0 ? 'mt-6' : 'mt-4'} font-body italic text-sm text-[#2C1E16]/70`}>
-                    Metode Pengiriman: Semua Item
+                  <dt className={`${shippingMethodIndex > 0 ? 'mt-6' : 'mt-4'} academia-label`}>
+                    Delivery Method
                   </dt>
-                  <dd className="mt-1 font-display font-medium text-lg text-[#2C1E16]">
+                  <dd className="mt-1" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.1rem', color: '#E8DFD4', fontStyle: 'italic' }}>
                     {shipping_option?.name} (
                     {formatPrice(amount, {
                       currency: cart?.region?.currency_code,
@@ -115,7 +116,7 @@ export const CheckoutDeliveryMethod: FC = () => {
 
       {isActiveStep && (
         <RemixFormProvider {...form}>
-          <fetcher.Form>
+          <fetcher.Form ref={formRef}>
             <TextField type="hidden" name="cartId" value={cart.id} />
             {Object.entries(shippingOptionsByProfile).map(
               ([profileId, shippingOptions], shippingOptionProfileIndex) => {
@@ -136,7 +137,18 @@ export const CheckoutDeliveryMethod: FC = () => {
                       shippingOptions={shippingOptions}
                       region={cart.region!}
                       value={values?.[shippingOptionProfileIndex] ?? null}
-                      onValueChange={(value) => form.setValue(`shippingOptionIds.${shippingOptionProfileIndex}`, value)}
+                      onValueChange={(value) => {
+                        // Update RHF state
+                        form.setValue(`shippingOptionIds.${shippingOptionProfileIndex}`, value);
+                        // Submit directly via fetcher with proper FormData format
+                        // remix-hook-form getValidatedFormData expects indexed keys: shippingOptionIds[0]
+                        const fd = new FormData();
+                        fd.append('cartId', cart.id);
+                        const updatedIds = [...(values ?? [])];
+                        updatedIds[shippingOptionProfileIndex] = value;
+                        updatedIds.forEach((id, i) => fd.append(`shippingOptionIds[${i}]`, id));
+                        fetcher.submit(fd, { method: 'post', action: '/api/checkout/shipping-methods' });
+                      }}
                     />
                   </Fragment>
                 );

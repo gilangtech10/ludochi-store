@@ -23,11 +23,14 @@ export const CartDrawerItem: FC<CartDrawerItemProps> = ({ item, currencyCode, is
         '!h-0 !p-0 !opacity-0': isRemoving,
       })}
     >
-      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-none border border-[#2C1E16] bg-[#2C1E16]">
+      <div
+        className="h-24 w-24 flex-shrink-0 overflow-hidden"
+        style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}
+      >
         <Image
           src={item.variant?.product?.thumbnail || ''}
           alt={item.product_title || 'product thumbnail'}
-          className="h-full w-full object-cover object-center grayscale-[30%] sepia-[20%]"
+          className="h-full w-full object-cover object-center sepia-aged"
         />
       </div>
 
@@ -35,21 +38,33 @@ export const CartDrawerItem: FC<CartDrawerItemProps> = ({ item, currencyCode, is
         <div>
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="text-xl font-display font-medium text-[#2C1E16] leading-tight">{item.product_title}</h3>
-              <p className="mt-1 font-body text-sm italic text-[#2C1E16]/70">{item.variant_title}</p>
+              <h3
+                className="leading-tight"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.1rem', color: '#E8DFD4' }}
+              >
+                {item.product_title}
+              </h3>
+              <p className="mt-1 italic text-sm" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
+                {item.variant_title}
+              </p>
             </div>
-            <Button variant="link" onClick={handleRemoveFromCart} disabled={isRemoving} className="text-xs !text-[#2C1E16]/40 hover:!text-[#B0894A] uppercase tracking-widest !p-0">
-              {isRemoving ? 'Mengahapus' : 'Hapus'}
+            <Button
+              variant="link"
+              onClick={handleRemoveFromCart}
+              disabled={isRemoving}
+              className="!p-0 transition-colors"
+              style={{ fontFamily: 'var(--font-label)', fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#9C8B7A' }}
+            >
+              {isRemoving ? 'Removing…' : 'Remove'}
             </Button>
           </div>
         </div>
         <div className="flex-1" />
-        <div className="flex items-end justify-between border-t border-[#2C1E16]/10 pt-2 mt-2">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#B0894A]">Jml {item.quantity}</p>
-
-          <div className="flex">
-            <p className="font-display font-medium text-lg text-[#2C1E16]">{formatLineItemPrice(item, currencyCode)}</p>
-          </div>
+        <div className="flex items-end justify-between pt-2 mt-2" style={{ borderTop: '1px solid rgba(74,63,53,0.4)' }}>
+          <span className="academia-label">Qty {item.quantity}</span>
+          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.05rem', color: '#C9A962' }}>
+            {formatLineItemPrice(item, currencyCode)}
+          </p>
         </div>
       </div>
     </li>

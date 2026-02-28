@@ -38,7 +38,7 @@ export const ShippingOptionsRadioGroupOption: FC<ShippingOptionsRadioGroupOption
             />
           </div>
           <div className="mt-4 flex flex-col justify-end">
-            <div className="font-display font-medium text-xl text-[#2C1E16]">{formatPrice(shippingOption.amount, { currency: region.currency_code })}</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.1rem', color: '#E8DFD4', fontStyle: 'italic' }}>{formatPrice(shippingOption.amount, { currency: region.currency_code })}</div>
           </div>
           <div
             className={clsx(

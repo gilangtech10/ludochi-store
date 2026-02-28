@@ -22,12 +22,12 @@ export const Header: FC<HeaderProps> = () => {
   const rootLoader = useRootLoaderData();
   const hasProducts = rootLoader?.hasPublishedProducts;
 
-  if (!headerNavigationItems) return <>Loading...</>;
+  if (!headerNavigationItems) return <></>;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#F5F2EB] border-b-4 border-double border-[#2C1E16]/30 text-[#2C1E16] transition-all duration-300 relative">
+    <header className="sticky top-0 z-50 w-full transition-all duration-300 relative" style={{ backgroundColor: '#1C1714', borderBottom: '1px solid #4A3F35', color: '#E8DFD4' }}>
       {/* Subtle Paper Texture Overlay for Header */}
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 opacity-[0.04] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
       <nav aria-label="Top">
         <div className="bg-transparent">
           <div className="">
@@ -37,15 +37,16 @@ export const Header: FC<HeaderProps> = () => {
                   {!!cart && (
                     <IconButton
                       aria-label="open shopping cart"
-                      className="text-[#2C1E16] sm:mr-0.5 relative z-10"
+                      className="sm:mr-0.5 relative z-10"
+                      style={{ color: '#E8DFD4' }}
                       icon={(iconProps) => (
                         <div className="relative">
                           <ShoppingBagIcon
                             {...iconProps}
-                            className={clsx(iconProps.className, 'hover:!text-[#B0894A] transition-colors rounded-none')}
+                            className={clsx(iconProps.className, 'transition-colors rounded-none hover:opacity-70')}
                           />
                           {cart.items && cart.items.length > 0 && (
-                            <span className="bg-[#B0894A] absolute -top-1 left-full -ml-2 flex h-4 min-w-[1rem] items-center justify-center px-1 text-[10px] font-body font-bold text-[#F5F2EB] border border-[#F5F2EB]">
+                            <span className="absolute -top-1 left-full -ml-2 flex h-4 min-w-[1rem] items-center justify-center px-1 text-[10px] font-bold" style={{ backgroundColor: '#C9A962', color: '#1C1714', border: '1px solid #1C1714', fontFamily: 'var(--font-label)' }}>
                               <span>
                                 {cart.items.reduce((acc, item) => acc + item.quantity, 0)}{' '}
                                 <span className="sr-only">items in cart, view bag</span>
@@ -77,14 +78,14 @@ export const Header: FC<HeaderProps> = () => {
                           {...navItemProps}
                           newTab={new_tab}
                           className={({ isActive }) =>
-                            clsx('my-4 flex items-center whitespace-nowrap text-lg font-display italic transition-colors hover:text-[#B0894A]', {
-                              'text-[#B0894A] border-b border-[#B0894A]':
+                            clsx('my-4 flex items-center whitespace-nowrap text-lg italic transition-colors duration-200', {
+                              'border-b border-[#C9A962]':
                                 isActive &&
                                 (!navItemProps.url.includes('#') ||
                                   activeSection === navItemProps.url.split('#')[1].split('?')[0]),
-                              'text-[#2C1E16]': !isActive,
                             })
                           }
+                          style={{ fontFamily: 'var(--font-display)', color: '#E8DFD4' }}
                           prefetch="viewport"
                         >
                           {navItemProps.label}
@@ -98,15 +99,16 @@ export const Header: FC<HeaderProps> = () => {
                       {!!cart && hasProducts && (
                         <IconButton
                           aria-label="open shopping cart"
-                          className="text-[#2C1E16] hidden sm:mr-0.5 sm:inline-flex focus-within:!bg-transparent rounded-none relative z-10"
+                          className="hidden sm:mr-0.5 sm:inline-flex focus-within:!bg-transparent rounded-none relative z-10"
+                          style={{ color: '#E8DFD4' }}
                           icon={(iconProps) => (
                             <div className="relative">
                               <ShoppingBagIcon
                                 {...iconProps}
-                                className={clsx(iconProps.className, 'hover:!text-[#B0894A] transition-colors rounded-none')}
+                                className={clsx(iconProps.className, 'transition-colors rounded-none hover:opacity-70')}
                               />
                               {cart.items && cart.items.length > 0 && (
-                                <span className="bg-[#B0894A] absolute -top-1 left-full -ml-2 flex h-4 min-w-[1rem] items-center justify-center px-1 text-[10px] font-body font-bold text-[#F5F2EB] border border-[#F5F2EB]">
+                                <span className="absolute -top-1 left-full -ml-2 flex h-4 min-w-[1rem] items-center justify-center px-1 text-[10px] font-bold" style={{ backgroundColor: '#C9A962', color: '#1C1714', border: '1px solid #1C1714', fontFamily: 'var(--font-label)' }}>
                                   <span>
                                     {cart.items.reduce((acc, item) => acc + item.quantity, 0)}{' '}
                                     <span className="sr-only">items in cart, view bag</span>
@@ -122,7 +124,8 @@ export const Header: FC<HeaderProps> = () => {
                         <IconButton
                           aria-label="open navigation menu"
                           onClick={() => setSideNavOpen(true)}
-                          className="hover:!bg-[#2C1E16]/5 focus:!bg-[#2C1E16]/5 rounded-none sm:inline-flex text-[#2C1E16] md:hidden transition-colors"
+                          className="rounded-none sm:inline-flex md:hidden transition-colors hover:opacity-70"
+                          style={{ color: '#E8DFD4' }}
                           icon={Bars3Icon}
                         />
                       )}

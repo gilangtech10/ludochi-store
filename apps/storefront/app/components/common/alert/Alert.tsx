@@ -10,43 +10,39 @@ export type AlertAction = FC<HTMLAttributes<HTMLButtonElement | HTMLAnchorElemen
 
 const alertClassNameMap = {
   default: {
-    wrapper: 'bg-gray-100',
-    icon: 'text-gray-400',
-    title: 'text-gray-800',
-    content: 'text-gray-700',
-    action:
-      'focus:ring-offset-2 bg-gray-50 text-gray-500 hover:bg-gray-100 focus:ring-offset-gray-50 focus:ring-gray-600',
+    wrapper: 'bg-[#261D19] border border-[#4A3F35]',
+    icon: 'text-[#9C8B7A]',
+    title: 'text-[#E8DFD4]',
+    content: 'text-[rgba(232,223,212,0.7)]',
+    action: 'focus:ring-offset-2 bg-[#2A201C] text-[#9C8B7A] hover:bg-[#321E17]',
   },
   success: {
-    wrapper: 'bg-green-50',
-    icon: 'text-green-400',
-    title: 'text-green-800',
-    content: 'text-green-700',
-    action:
-      'focus:ring-offset-2 bg-green-50 text-green-500 hover:bg-green-100 focus:ring-offset-green-50 focus:ring-green-600',
+    wrapper: 'bg-[#1A261A] border border-[#2D4A2D]',
+    icon: 'text-[#8FBE8F]',
+    title: 'text-[#B8D8B8]',
+    content: 'text-[rgba(184,216,184,0.8)]',
+    action: 'focus:ring-offset-2 bg-[#1A261A] text-[#8FBE8F] hover:bg-[#1E2D1E]',
   },
   error: {
-    wrapper: 'bg-red-50',
-    icon: 'text-red-400',
-    title: 'text-red-800',
-    content: 'text-red-700',
-    action: 'focus:ring-offset-2 bg-red-50 text-red-500 hover:bg-red-100 focus:ring-offset-red-50 focus:ring-red-600',
+    wrapper: 'bg-[#2A1717] border border-[#4A2525]',
+    icon: 'text-[#C0392B]',
+    title: 'text-[#E07070]',
+    content: 'text-[rgba(224,112,112,0.8)]',
+    action: 'focus:ring-offset-2 bg-[#2A1717] text-[#C0392B] hover:bg-[#321E1E]',
   },
   warning: {
-    wrapper: 'bg-amber-50',
-    icon: 'text-amber-400',
-    title: 'text-amber-800',
-    content: 'text-amber-700',
-    action:
-      'focus:ring-offset-2 bg-amber-50 text-amber-500 hover:bg-amber-100 focus:ring-offset-amber-50 focus:ring-amber-600',
+    wrapper: 'bg-[#261E10] border border-[#4A3A1A]',
+    icon: 'text-[#C9A962]',
+    title: 'text-[#E8C87A]',
+    content: 'text-[rgba(232,200,122,0.8)]',
+    action: 'focus:ring-offset-2 bg-[#261E10] text-[#C9A962] hover:bg-[#2E2412]',
   },
   info: {
-    wrapper: 'bg-blue-50',
-    icon: 'text-blue-400',
-    title: 'text-blue-800',
-    content: 'text-blue-700',
-    action:
-      'focus:ring-offset-2 bg-green-50 text-green-500 hover:bg-green-100 focus:ring-offset-green-50 focus:ring-green-600',
+    wrapper: 'bg-[#1A1F2A] border border-[#2A3545]',
+    icon: 'text-[#7BA8C9]',
+    title: 'text-[#A8C8E8]',
+    content: 'text-[rgba(168,200,232,0.8)]',
+    action: 'focus:ring-offset-2 bg-[#1A1F2A] text-[#7BA8C9] hover:bg-[#1E2530]',
   },
 };
 

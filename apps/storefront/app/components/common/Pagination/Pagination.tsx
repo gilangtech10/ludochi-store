@@ -1,5 +1,3 @@
-import ChevronLeftIcon from '@heroicons/react/24/solid/ChevronLeftIcon';
-import ChevronRightIcon from '@heroicons/react/24/solid/ChevronRightIcon';
 import clsx from 'clsx';
 import { FC, ReactNode, useEffect } from 'react';
 import { Link } from 'react-router';
@@ -47,8 +45,6 @@ export interface PaginationItemProps extends PaginationButtonProps {
 }
 
 const PaginationItem: FC<PaginationItemProps> = ({ className, currentPage, page, ...props }) => {
-  const currentClasses = 'z-10 bg-primary-50 border-primary-500 text-primary-600';
-  const defaultClasses = 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50';
   const isCurrent = page === currentPage;
 
   return (
@@ -56,9 +52,17 @@ const PaginationItem: FC<PaginationItemProps> = ({ className, currentPage, page,
       viewTransition
       className={clsx(
         className,
-        'relative inline-flex items-center border px-4 py-2 text-sm font-bold',
-        isCurrent ? currentClasses : defaultClasses,
+        'relative inline-flex items-center justify-center w-10 h-10 text-sm border transition-colors duration-200',
+        isCurrent
+          ? 'border-[#C9A962] text-[#1C1714] font-medium'
+          : 'border-[#4A3F35] text-[#9C8B7A] hover:border-[#C9A962]/50 hover:text-[#E8DFD4]',
       )}
+      style={{
+        fontFamily: 'var(--font-label)',
+        fontSize: '0.65rem',
+        letterSpacing: '0.1em',
+        backgroundColor: isCurrent ? '#C9A962' : '#251E19',
+      }}
       aria-current={isCurrent ? 'page' : 'false'}
       to={props.href}
       prefetch="viewport"
@@ -84,13 +88,17 @@ const PaginationButton: FC<PaginationArrowButtonProps> = ({
 }) => {
   const className = clsx(
     _className,
-    { 'pointer-events-none cursor-not-allowed opacity-50': isDisabled },
-    'relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm font-bold text-gray-500 hover:bg-gray-50 sm:px-4',
+    'relative inline-flex items-center justify-center w-10 h-10 border transition-colors duration-200',
+    isDisabled
+      ? 'opacity-40 pointer-events-none cursor-not-allowed border-[#4A3F35] text-[#9C8B7A]'
+      : 'border-[#4A3F35] text-[#9C8B7A] hover:border-[#C9A962]/50 hover:text-[#C9A962]',
   );
+
+  const style = { backgroundColor: '#251E19' };
 
   if (isDisabled)
     return (
-      <button aria-disabled={isDisabled} disabled className={className}>
+      <button aria-disabled={isDisabled} disabled className={className} style={style}>
         {children}
       </button>
     );
@@ -103,6 +111,7 @@ const PaginationButton: FC<PaginationArrowButtonProps> = ({
         if (isDisabled) event.preventDefault();
       }}
       className={className}
+      style={style}
       to={href}
       prefetch="viewport"
     >
@@ -134,64 +143,88 @@ export const Pagination: FC<PaginationProps> = ({
   const endPage = totalPages <= 5 ? totalPages : Math.min(totalPages, currentPage + 1);
 
   return (
-    <div className="mt-16 flex items-center justify-between border-t border-gray-200 py-3">
-      <div className="flex flex-1 flex-col-reverse flex-wrap items-center justify-between gap-4 sm:flex-row">
-        <div>
-          <p className="mb-4 text-sm text-gray-700 sm:mb-0">
-            Showing <span className="font-bold">{startIndex + 1}</span> to{' '}
-            <span className="font-bold">{endIndex + 1}</span> of{' '}
-            <span className="font-bold">{paginationConfig.count}</span> results
-          </p>
-        </div>
-        <div>
-          <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <PaginationButton
-              className="rounded-l-md"
-              currentPage={currentPage}
-              isDisabled={currentPage === 1}
-              {...getPreviousProps({ currentPage })}
-            >
-              <span className="sr-only">Previous</span>
-              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-            </PaginationButton>
+    <div className="mt-20 pt-10 border-t border-[#4A3F35]">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
 
-            {startPage > 2 && (
-              <>
-                <PaginationItem page={1} currentPage={currentPage} {...getPaginationItemProps({ page: 1 })} />
-                <span className="relative inline-flex items-center border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-700 sm:px-4">
-                  ...
-                </span>
-              </>
-            )}
+        {/* Entry count */}
+        <p
+          style={{
+            fontFamily: 'var(--font-label)',
+            fontSize: '0.6rem',
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: '#9C8B7A',
+          }}
+        >
+          Entries{' '}
+          <span style={{ color: '#C9A962' }}>{startIndex + 1}</span>
+          {' '}–{' '}
+          <span style={{ color: '#C9A962' }}>{endIndex + 1}</span>
+          {' '}of{' '}
+          <span style={{ color: '#E8DFD4' }}>{paginationConfig.count}</span>
+        </p>
 
-            {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
-              <PaginationItem key={page} page={page} currentPage={currentPage} {...getPaginationItemProps({ page })} />
-            ))}
+        {/* Navigation */}
+        <nav
+          className="inline-flex items-center gap-1"
+          aria-label="Catalogue pagination"
+        >
+          {/* Previous */}
+          <PaginationButton
+            currentPage={currentPage}
+            isDisabled={currentPage === 1}
+            {...getPreviousProps({ currentPage })}
+          >
+            <span className="sr-only">Previous</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </PaginationButton>
 
-            {endPage < totalPages - 1 && (
-              <>
-                <span className="relative inline-flex items-center border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-700 sm:px-4">
-                  ...
-                </span>
-                <PaginationItem
-                  page={totalPages}
-                  currentPage={currentPage}
-                  {...getPaginationItemProps({ page: totalPages })}
-                />
-              </>
-            )}
+          {startPage > 2 && (
+            <>
+              <PaginationItem page={1} currentPage={currentPage} {...getPaginationItemProps({ page: 1 })} />
+              <span
+                className="inline-flex items-center justify-center w-8 text-sm"
+                style={{ color: '#4A3F35', fontFamily: 'var(--font-body)' }}
+              >
+                …
+              </span>
+            </>
+          )}
 
-            <PaginationButton
-              className="rounded-r-md"
-              currentPage={currentPage}
-              isDisabled={currentPage === totalPages}
-              {...getNextProps({ currentPage })}
-            >
-              <span className="sr-only">Next</span>
-              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-            </PaginationButton>
-          </nav>
-        </div>
+          {Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
+            <PaginationItem key={page} page={page} currentPage={currentPage} {...getPaginationItemProps({ page })} />
+          ))}
+
+          {endPage < totalPages - 1 && (
+            <>
+              <span
+                className="inline-flex items-center justify-center w-8 text-sm"
+                style={{ color: '#4A3F35', fontFamily: 'var(--font-body)' }}
+              >
+                …
+              </span>
+              <PaginationItem
+                page={totalPages}
+                currentPage={currentPage}
+                {...getPaginationItemProps({ page: totalPages })}
+              />
+            </>
+          )}
+
+          {/* Next */}
+          <PaginationButton
+            currentPage={currentPage}
+            isDisabled={currentPage === totalPages}
+            {...getNextProps({ currentPage })}
+          >
+            <span className="sr-only">Next</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </PaginationButton>
+        </nav>
       </div>
     </div>
   );

@@ -17,7 +17,6 @@ import { useCart } from '@app/hooks/useCart';
 import { useProductInventory } from '@app/hooks/useProductInventory';
 import { useRegion } from '@app/hooks/useRegion';
 import { createLineItemSchema } from '@app/routes/api.cart.line-items.create';
-import HomeIcon from '@heroicons/react/24/solid/HomeIcon';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { StoreProductReviewStats } from '@lambdacurry/medusa-plugins-sdk';
 import { FetcherKeys } from '@libs/util/fetcher-keys';
@@ -33,26 +32,10 @@ import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } f
 import { Link, useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
 
-/**
- * Generates breadcrumbs for a product page
- * @param product - The product to generate breadcrumbs for
- * @returns An array of breadcrumb objects
- */
 const getBreadcrumbs = (product: StoreProduct) => {
   const breadcrumbs: Breadcrumb[] = [
-    {
-      label: (
-        <span className="flex whitespace-nowrap">
-          <HomeIcon className="inline h-4 w-4" />
-          <span className="sr-only">Home</span>
-        </span>
-      ),
-      url: `/`,
-    },
-    {
-      label: 'All Products',
-      url: '/products',
-    },
+    { label: 'Home', url: '/' },
+    { label: 'The Catalogue', url: '/products' },
   ];
 
   if (product.collection) {
@@ -71,14 +54,12 @@ export interface ProductTemplateProps {
   reviewStats?: StoreProductReviewStats;
 }
 
-/**
- * Determines if a variant is sold out based on inventory
- * @param variant - The variant to check
- * @returns True if the variant is sold out, false otherwise
- */
 const variantIsSoldOut: (variant: StoreProductVariant | undefined) => boolean = (variant) => {
   return !!(variant?.manage_inventory && variant?.inventory_quantity! < 1);
 };
+
+// Paper texture (matches global)
+const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
 export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductTemplateProps) => {
   const formRef = useRef<HTMLFormElement>(null);
@@ -86,31 +67,22 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
   const { toggleCartDrawer } = useCart();
   const { region } = useRegion();
   const hasErrors = Object.keys(addToCartFetcher.data?.errors || {}).length > 0;
-
-  // Combine both states to detect adding items as early as possible
   const isAddingToCart = ['submitting', 'loading'].includes(addToCartFetcher.state);
 
   const defaultValues = {
     productId: product.id!,
     quantity: '1',
     options: useMemo(() => {
-      // Get the first variant as the default
       const firstVariant = product.variants?.[0];
-
       if (firstVariant && firstVariant.options) {
-        // Create options object from the first variant
         return firstVariant.options.reduce(
           (acc, option) => {
-            if (option.option_id && option.value) {
-              acc[option.option_id] = option.value;
-            }
+            if (option.option_id && option.value) acc[option.option_id] = option.value;
             return acc;
           },
           {} as Record<string, string>,
         );
       }
-
-      // Fallback to first option values if no variants
       return (
         product.options?.reduce(
           (acc, option) => {
@@ -144,110 +116,57 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
   );
 
   const variantMatrix = useMemo(() => selectVariantMatrix(product), [product]);
-  const selectedVariant = useMemo(() => {
-    return selectVariantFromMatrixBySelectedOptions(variantMatrix, selectedOptions);
-  }, [variantMatrix, selectedOptions]);
+  const selectedVariant = useMemo(
+    () => selectVariantFromMatrixBySelectedOptions(variantMatrix, selectedOptions),
+    [variantMatrix, selectedOptions],
+  );
 
   const productSelectOptions = useMemo(
     () =>
       product.options?.map((option, index) => {
-        // For the first option (Duration), always show all values
         if (index === 0) {
           const optionValuesWithPrices = getOptionValuesWithDiscountLabels(
-            index,
-            currencyCode,
-            option.values || [],
-            variantMatrix,
-            selectedOptions,
+            index, currencyCode, option.values || [], variantMatrix, selectedOptions,
           );
-
-          return {
-            title: option.title,
-            product_id: option.product_id as string,
-            id: option.id,
-            values: optionValuesWithPrices,
-          };
+          return { title: option.title, product_id: option.product_id as string, id: option.id, values: optionValuesWithPrices };
         }
-
-        // For subsequent options, filter based on previous selections
         const filteredOptionValues = getFilteredOptionValues(product, controlledOptions, option.id);
-
-        // Only include option values that are available based on current selections
         const availableOptionValues = option.values?.filter((optionValue) =>
           filteredOptionValues.some((filteredValue) => filteredValue.value === optionValue.value),
         ) as StoreProductOptionValue[];
-
         const optionValuesWithPrices = getOptionValuesWithDiscountLabels(
-          index,
-          currencyCode,
-          availableOptionValues || [],
-          variantMatrix,
-          selectedOptions,
+          index, currencyCode, availableOptionValues || [], variantMatrix, selectedOptions,
         );
-
-        return {
-          title: option.title,
-          product_id: option.product_id as string,
-          id: option.id,
-          values: optionValuesWithPrices,
-        };
+        return { title: option.title, product_id: option.product_id as string, id: option.id, values: optionValuesWithPrices };
       }),
     [product, controlledOptions, currencyCode, variantMatrix, selectedOptions],
   );
 
   const productSoldOut = useProductInventory(product).averageInventory === 0;
 
-  /**
-   * Updates controlled options based on a changed option and resets subsequent options
-   * @param currentOptions - Current controlled options
-   * @param changedOptionId - ID of the option that changed
-   * @param newValue - New value for the changed option
-   * @returns Updated options object
-   */
   const updateControlledOptions = (
     currentOptions: Record<string, string>,
     changedOptionId: string,
     newValue: string,
   ): Record<string, string> => {
-    // Create new options object with the changed option
     const newOptions = { ...currentOptions };
     newOptions[changedOptionId] = newValue;
-
-    // Get all option IDs in order
     const allOptionIds = product.options?.map((option) => option.id) || [];
-
-    // Find the index of the changed option
     const changedOptionIndex = allOptionIds.indexOf(changedOptionId);
-
-    // Get all options that come after the changed one
     const subsequentOptionIds = changedOptionIndex >= 0 ? allOptionIds.slice(changedOptionIndex + 1) : [];
-
-    // Reset all subsequent options to their first available value
     if (subsequentOptionIds.length > 0) {
-      // For each subsequent option, find available values based on current selections
       subsequentOptionIds.forEach((optionId) => {
         if (!optionId) return;
-
-        // Get filtered option values for this option
         const filteredValues = getFilteredOptionValues(product, newOptions, optionId);
-
-        if (filteredValues.length > 0) {
-          // Set to first available value
-          newOptions[optionId] = filteredValues[0].value;
-        } else {
-          // No valid options, set to empty
-          newOptions[optionId] = '';
-        }
+        newOptions[optionId] = filteredValues.length > 0 ? filteredValues[0].value : '';
       });
     }
-
     return newOptions;
   };
 
   const handleOptionChangeBySelect = (e: ChangeEvent<HTMLInputElement>) => {
     const changedOptionId = e.target.name.replace('options.', '');
-    const newValue = e.target.value;
-    const newOptions = updateControlledOptions(controlledOptions, changedOptionId, newValue);
+    const newOptions = updateControlledOptions(controlledOptions, changedOptionId, e.target.value);
     setControlledOptions(newOptions);
     form.setValue('options', newOptions);
   };
@@ -260,51 +179,40 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
 
   useEffect(() => {
     if (!isAddingToCart && !hasErrors) {
-      // Only reset the form fields, not the controlled options
       if (formRef.current) {
-        // Reset the form to clear validation states
         formRef.current.reset();
-
-        // Re-set the quantity field to 1
         const quantityInput = formRef.current.querySelector('input[name="quantity"]') as HTMLInputElement;
-        if (quantityInput) {
-          quantityInput.value = '1';
-        }
-
-        // Keep the hidden productId field
+        if (quantityInput) quantityInput.value = '1';
         const productIdInput = formRef.current.querySelector('input[name="productId"]') as HTMLInputElement;
-        if (productIdInput) {
-          productIdInput.value = product.id!;
-        }
+        if (productIdInput) productIdInput.value = product.id!;
       }
     }
   }, [isAddingToCart, hasErrors, product.id]);
 
   useEffect(() => {
-    // Initialize controlledOptions with defaultValues.options only on initial load
-    if (Object.keys(controlledOptions).length === 0) {
-      setControlledOptions(defaultValues.options);
-    }
+    if (Object.keys(controlledOptions).length === 0) setControlledOptions(defaultValues.options);
   }, [defaultValues.options, controlledOptions]);
 
   useEffect(() => {
-    // Initialize controlledOptions with defaultValues.options
     setControlledOptions(defaultValues.options);
   }, [defaultValues.options]);
 
   const soldOut = variantIsSoldOut(selectedVariant) || productSoldOut;
-
-  // Use useCallback for the form submission handler
-  const handleAddToCart = useCallback(() => {
-    // Open cart drawer
-    toggleCartDrawer(true);
-  }, [toggleCartDrawer]);
+  const handleAddToCart = useCallback(() => { toggleCartDrawer(true); }, [toggleCartDrawer]);
 
   return (
     <>
-      <section className="pb-12 pt-12 xl:pt-24 min-h-screen bg-[#F5F2EB] text-[#2C1E16] selection:bg-[#B0894A] selection:text-[#F5F2EB] relative">
-        {/* Global Paper Texture Overlay */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-[0.03] mix-blend-multiply" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+      <section
+        className="relative min-h-screen selection:bg-[#C9A962] selection:text-[#1C1714]"
+        style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
+      >
+        {/* Atmospheric overlays */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
+          style={{ backgroundImage: PAPER_TEXTURE, opacity: 0.03 }}
+        />
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 vignette-overlay" />
 
         <RemixFormProvider {...form}>
           <addToCartFetcher.Form
@@ -316,172 +224,271 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
             className="relative z-10"
           >
             <input type="hidden" name="productId" value={product.id} />
+            <input type="hidden" name="productTitle" value={product.title} />
+            <input
+              type="hidden"
+              name="productThumbnail"
+              value={(product.images && product.images[0] && product.images[0].url) || product.thumbnail || ''}
+            />
 
-            <Container className="px-0 sm:px-6 md:px-8">
-              <Grid>
-                <GridColumn>
-                  <div className="md:py-6">
-                    <Grid className="!gap-0">
-                      <GridColumn className="mb-8 md:col-span-6 lg:col-span-7 xl:pr-16 xl:pl-9">
-                        <ProductImageGallery key={product.id} product={product} />
-                      </GridColumn>
+            <Container className="px-0 sm:px-6 md:px-8 pt-8 pb-24">
 
-                      <GridColumn className="flex flex-col md:col-span-6 lg:col-span-5">
-                        <div className="px-0 sm:px-6 md:p-10 md:pt-0">
-                          <div>
-                            <Breadcrumbs className="mb-6 text-[#B0894A] font-body text-sm" breadcrumbs={breadcrumbs} />
+              {/* ── Breadcrumb ── */}
+              <div className="flex items-center gap-2 mb-10 px-4 sm:px-0">
+                {breadcrumbs.map((crumb, i) => (
+                  <span key={i} className="flex items-center gap-2">
+                    {i > 0 && <span style={{ color: '#4A3F35' }}>·</span>}
+                    {crumb.url ? (
+                      <Link
+                        to={crumb.url}
+                        className="transition-colors duration-200 hover:text-[#C9A962]"
+                        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#9C8B7A' }}
+                      >
+                        {crumb.label}
+                      </Link>
+                    ) : (
+                      <span
+                        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C9A962' }}
+                      >
+                        {crumb.label}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
 
-                            <header className="flex flex-col gap-4 mb-6 border-b border-[#B0894A]/30 pb-6 w-full">
-                              <div className="flex w-full items-baseline justify-between pt-2">
-                                <h1 className="text-4xl md:text-5xl font-display font-medium italic tracking-tight text-[#2C1E16]">
-                                  {product.title}
-                                </h1>
-                                <Share
-                                  itemType="product"
-                                  shareData={{
-                                    title: product.title,
-                                    text: truncate(product.description || 'Check out this product', {
-                                      length: 200,
-                                      separator: ' ',
-                                    }),
-                                  }}
-                                />
-                              </div>
-                            </header>
-                          </div>
+              {/* ── Main two-column layout ── */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 xl:gap-24">
 
-                          <ProductReviewStars reviewsCount={reviewsCount} reviewStats={reviewStats} />
+                {/* ── Left: Image Gallery ── */}
+                <div className="mb-10 lg:mb-0">
+                  {/* Ornate frame wrapper */}
+                  <div
+                    className="ornate-frame ornate-frame-lg relative p-3"
+                    style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
+                  >
+                    <ProductImageGallery key={product.id} product={product} />
 
-                          <section aria-labelledby="product-information" className="mt-6 mb-8">
-                            <h2 id="product-information" className="sr-only">
-                              Product information
-                            </h2>
-
-                            <div className="flex items-baseline gap-3">
-                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Mahar</span>
-                              <p className="text-2xl text-[#2C1E16] font-display font-medium">
-                                {selectedVariant ? (
-                                  <ProductPrice product={product} variant={selectedVariant} currencyCode={currencyCode} />
-                                ) : (
-                                  <ProductPriceRange product={product} currencyCode={currencyCode} />
-                                )}
-                              </p>
-                            </div>
-                          </section>
-
-                          {productSelectOptions && productSelectOptions.length > 5 && (
-                            <section aria-labelledby="product-options" className="product-options">
-                              <h2 id="product-options" className="sr-only">
-                                Product options
-                              </h2>
-
-                              <div className="space-y-4">
-                                {productSelectOptions.map((option, optionIndex) => (
-                                  <ProductOptionSelectorSelect
-                                    key={optionIndex}
-                                    option={option}
-                                    value={controlledOptions[option.id]}
-                                    onChange={handleOptionChangeBySelect}
-                                    currencyCode={currencyCode}
-                                  />
-                                ))}
-                              </div>
-                            </section>
-                          )}
-
-                          {productSelectOptions && productSelectOptions.length <= 5 && (
-                            <section aria-labelledby="product-options" className="product-options my-6 grid gap-4">
-                              <h2 id="product-options" className="sr-only">
-                                Product options
-                              </h2>
-                              {productSelectOptions.map((option, optionIndex) => (
-                                <div key={optionIndex}>
-                                  <FieldLabel className="mb-2">{option.title}</FieldLabel>
-                                  <ProductOptionSelectorRadio
-                                    option={option}
-                                    value={controlledOptions[option.id]}
-                                    onChange={handleOptionChangeByRadio}
-                                    currencyCode={currencyCode}
-                                  />
-                                </div>
-                              ))}
-                            </section>
-                          )}
-
-                          <div className="my-6 flex flex-col gap-2 border-t border-[#2C1E16]/20 pt-8">
-                            <div className="flex items-center gap-4 py-2">
-                              {!soldOut && <QuantitySelector variant={selectedVariant} className="!border-[#2C1E16] !rounded-none focus:!ring-[#B0894A]" />}
-                              <div className="flex-1">
-                                {!soldOut ? (
-                                  <SubmitButton className="group relative !h-12 w-full whitespace-nowrap !text-base font-display italic tracking-wide !bg-[#2C1E16] text-[#F5F2EB] !border !border-[#2C1E16] !rounded-none hover:!bg-[#F5F2EB] hover:!text-[#2C1E16] cursor-pointer transition-all duration-500 overflow-hidden">
-                                    <div className="absolute inset-0 border border-[#B0894A] m-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                                    <span className="relative z-10 flex items-center justify-center">
-                                      {isAddingToCart ? 'Sedang Mencatat...' : 'Tambah ke Baki'}
-                                    </span>
-                                  </SubmitButton>
-                                ) : (
-                                  <SubmitButton
-                                    disabled
-                                    className="pointer-events-none !h-12 w-full !text-base font-display italic tracking-wide !bg-transparent text-[#2C1E16]/50 !border !border-[#2C1E16]/30 !rounded-none"
-                                  >
-                                    Habis Terjual
-                                  </SubmitButton>
-                                )}
-                              </div>
-                            </div>
-
-                            {!!product.description && (
-                              <div className="mt-8 border-t border-[#2C1E16]/10 pt-6">
-                                <h3 className="mb-4 text-[10px] uppercase font-bold tracking-[0.2em] text-[#B0894A]">Rincian</h3>
-                                <div className="whitespace-pre-wrap text-base font-body leading-relaxed text-[#2C1E16]/80 text-justify">
-                                  {product.description}
-                                </div>
-                              </div>
-                            )}
-
-                            {product.categories && product.categories.length > 0 && (
-                              <nav aria-label="Categories" className="mt-6">
-                                <h3 className="mb-3 text-[10px] uppercase font-bold tracking-[0.2em] text-[#B0894A]">Kategori</h3>
-
-                                <ol className="flex flex-wrap items-center gap-2">
-                                  {product.categories.map((category, categoryIndex) => (
-                                    <li key={categoryIndex}>
-                                      <Button
-                                        as={(buttonProps) => (
-                                          <Link to={`/categories/${category.handle}`} {...buttonProps} />
-                                        )}
-                                        className="!h-auto whitespace-nowrap !rounded-none !px-3 !py-1 flex items-center justify-center font-body !text-xs italic !text-[#2C1E16] !bg-transparent border border-[#2C1E16]/30 hover:border-[#B0894A] hover:text-[#B0894A] transition-colors"
-                                      >
-                                        {category.name}
-                                      </Button>
-                                    </li>
-                                  ))}
-                                </ol>
-                              </nav>
-                            )}
-
-                            {product.tags && product.tags.length > 0 && (
-                              <nav aria-label="Tags" className="mt-6">
-                                <h3 className="mb-3 text-[10px] uppercase font-bold tracking-[0.2em] text-[#B0894A]">Penanda</h3>
-
-                                <ol className="flex flex-wrap items-center gap-2">
-                                  {product.tags.map((tag, tagIndex) => (
-                                    <li key={tagIndex}>
-                                      <span className="whitespace-nowrap rounded-none px-3 py-1 flex items-center justify-center font-body text-xs italic text-[#F5F2EB] bg-[#2C1E16] cursor-default opacity-80">
-                                        {tag.value}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ol>
-                              </nav>
-                            )}
-                          </div>
-                        </div>
-                      </GridColumn>
-                    </Grid>
+                    {/* Caption tag */}
+                    <div
+                      className="absolute -bottom-4 -left-4 py-2 px-4 z-20"
+                      style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
+                    >
+                      <p className="text-xs italic" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
+                        Fig. — {product.title}
+                      </p>
+                    </div>
                   </div>
-                </GridColumn>
-              </Grid>
+                </div>
+
+                {/* ── Right: Product Info ── */}
+                <div className="flex flex-col px-4 sm:px-0">
+
+                  {/* Header */}
+                  <header className="pb-6 mb-6 border-b border-[#4A3F35]">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <span className="academia-label mb-3 block">
+                          {product.collection ? product.collection.title : 'Single Edition'}
+                        </span>
+                        <h1
+                          className="text-4xl md:text-5xl leading-tight"
+                          style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
+                        >
+                          {product.title}
+                        </h1>
+                      </div>
+                      <Share
+                        itemType="product"
+                        shareData={{
+                          title: product.title,
+                          text: truncate(product.description || 'Check out this product', { length: 200, separator: ' ' }),
+                        }}
+                      />
+                    </div>
+
+                    {/* Review stars */}
+                    <div className="mt-4">
+                      <ProductReviewStars reviewsCount={reviewsCount} reviewStats={reviewStats} />
+                    </div>
+                  </header>
+
+                  {/* Price */}
+                  <section aria-labelledby="product-information" className="mb-8">
+                    <h2 id="product-information" className="sr-only">Product information</h2>
+                    <div className="flex items-baseline gap-3">
+                      <span className="academia-label">Offered At</span>
+                      <p
+                        className="text-3xl"
+                        style={{ fontFamily: 'var(--font-display)', color: '#C9A962' }}
+                      >
+                        {selectedVariant ? (
+                          <ProductPrice product={product} variant={selectedVariant} currencyCode={currencyCode} />
+                        ) : (
+                          <ProductPriceRange product={product} currencyCode={currencyCode} />
+                        )}
+                      </p>
+                    </div>
+                  </section>
+
+                  {/* Options — Select (> 5) */}
+                  {productSelectOptions && productSelectOptions.length > 5 && (
+                    <section aria-labelledby="product-options" className="mb-6">
+                      <h2 id="product-options" className="sr-only">Product options</h2>
+                      <div className="space-y-4">
+                        {productSelectOptions.map((option, optionIndex) => (
+                          <ProductOptionSelectorSelect
+                            key={optionIndex}
+                            option={option}
+                            value={controlledOptions[option.id]}
+                            onChange={handleOptionChangeBySelect}
+                            currencyCode={currencyCode}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {/* Options — Radio (≤ 5) */}
+                  {productSelectOptions && productSelectOptions.length <= 5 && (
+                    <section aria-labelledby="product-options" className="mb-6 grid gap-5">
+                      <h2 id="product-options" className="sr-only">Product options</h2>
+                      {productSelectOptions.map((option, optionIndex) => (
+                        <div key={optionIndex}>
+                          <FieldLabel className="mb-2">{option.title}</FieldLabel>
+                          <ProductOptionSelectorRadio
+                            option={option}
+                            value={controlledOptions[option.id]}
+                            onChange={handleOptionChangeByRadio}
+                            currencyCode={currencyCode}
+                          />
+                        </div>
+                      ))}
+                    </section>
+                  )}
+
+                  {/* Divider */}
+                  <div className="ornate-divider ornate-divider-alt mb-8" aria-hidden="true" />
+
+                  {/* Add to Cart */}
+                  <div className="flex items-center gap-4 mb-8">
+                    {!soldOut && (
+                      <QuantitySelector
+                        variant={selectedVariant}
+                        className="!border-[#4A3F35] !rounded-none focus:!ring-[#C9A962] !bg-[#251E19] !text-[#E8DFD4]"
+                      />
+                    )}
+                    <div className="flex-1">
+                      {!soldOut ? (
+                        <SubmitButton className="btn-brass engraved group relative w-full gap-3 !rounded cursor-pointer">
+                          <span className="relative z-10 flex items-center justify-center gap-2">
+                            {isAddingToCart ? (
+                              <>
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                </svg>
+                                Adding to Cart…
+                              </>
+                            ) : (
+                              <>
+                                Add to Cart
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                                </svg>
+                              </>
+                            )}
+                          </span>
+                        </SubmitButton>
+                      ) : (
+                        <SubmitButton
+                          disabled
+                          className="pointer-events-none w-full h-12 border border-[#4A3F35] text-[#9C8B7A] bg-transparent !rounded"
+                          style={{ fontFamily: 'var(--font-label)', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}
+                        >
+                          Sold Out
+                        </SubmitButton>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Description */}
+                  {!!product.description && (
+                    <div className="pt-6 border-t border-[#4A3F35]">
+                      <h3 className="academia-label mb-4">I. &nbsp;About This Entry</h3>
+                      <div
+                        className="whitespace-pre-wrap leading-relaxed text-justify"
+                        style={{ fontFamily: 'var(--font-body)', fontSize: '1.0625rem', color: 'rgba(232,223,212,0.8)' }}
+                      >
+                        {product.description}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Categories */}
+                  {product.categories && product.categories.length > 0 && (
+                    <nav aria-label="Categories" className="mt-8">
+                      <h3 className="academia-label mb-3">II. &nbsp;Classification</h3>
+                      <ol className="flex flex-wrap items-center gap-2">
+                        {product.categories.map((category, categoryIndex) => (
+                          <li key={categoryIndex}>
+                            <Link
+                              to={`/categories/${category.handle}`}
+                              className="inline-block py-1 px-3 transition-colors duration-200"
+                              style={{
+                                fontFamily: 'var(--font-label)',
+                                fontSize: '0.55rem',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                border: '1px solid #4A3F35',
+                                color: '#9C8B7A',
+                              }}
+                              onMouseEnter={e => {
+                                (e.currentTarget as HTMLElement).style.borderColor = '#C9A962';
+                                (e.currentTarget as HTMLElement).style.color = '#C9A962';
+                              }}
+                              onMouseLeave={e => {
+                                (e.currentTarget as HTMLElement).style.borderColor = '#4A3F35';
+                                (e.currentTarget as HTMLElement).style.color = '#9C8B7A';
+                              }}
+                            >
+                              {category.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ol>
+                    </nav>
+                  )}
+
+                  {/* Tags */}
+                  {product.tags && product.tags.length > 0 && (
+                    <nav aria-label="Tags" className="mt-6">
+                      <h3 className="academia-label mb-3">III. &nbsp;Keywords</h3>
+                      <ol className="flex flex-wrap items-center gap-2">
+                        {product.tags.map((tag, tagIndex) => (
+                          <li key={tagIndex}>
+                            <span
+                              className="inline-block py-1 px-3"
+                              style={{
+                                fontFamily: 'var(--font-label)',
+                                fontSize: '0.55rem',
+                                letterSpacing: '0.2em',
+                                textTransform: 'uppercase',
+                                backgroundColor: '#251E19',
+                                border: '1px solid #4A3F35',
+                                color: '#9C8B7A',
+                              }}
+                            >
+                              {tag.value}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    </nav>
+                  )}
+
+                </div>
+              </div>
             </Container>
           </addToCartFetcher.Form>
         </RemixFormProvider>

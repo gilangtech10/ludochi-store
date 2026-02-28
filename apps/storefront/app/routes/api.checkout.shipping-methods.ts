@@ -50,9 +50,13 @@ export async function action(actionArgs: ActionFunctionArgs) {
   // Force payment sessions to be updated
   const updatedCart = (await updateCart(actionArgs.request, {})).cart;
 
-  await initiatePaymentSession(actionArgs.request, updatedCart, {
-    provider_id: 'pp_stripe_stripe',
-  });
+  try {
+    await initiatePaymentSession(actionArgs.request, updatedCart, {
+      provider_id: 'pp_stripe_stripe',
+    });
+  } catch (e) {
+    console.warn('Could not initiate Stripe payment session after shipping update:', e);
+  }
 
   const cart = (await retrieveCart(actionArgs.request)) as StoreCart;
 

@@ -40,7 +40,7 @@ export const QuantitySelector: FC<QuantitySelectorProps> = ({ className, variant
             Quantity
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-body text-xs italic text-[#B0894A]">Jml</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 font-body text-xs italic text-[#B0894A]">Qty</span>
             <select
               {...field}
               className="focus:border-[#B0894A] focus:ring-1 focus:ring-[#B0894A] !h-12 !w-full rounded-none border border-[#2C1E16]/30 bg-transparent text-[#2C1E16] font-display italic pl-[3.25rem] pr-4 transition-colors hover:border-[#B0894A] cursor-pointer"

@@ -18,21 +18,27 @@ export const ProductGrid: FC<ProductListProps> = ({
   className = 'grid grid-cols-1 gap-y-6 @md:grid-cols-2 gap-x-4 @2xl:!grid-cols-3 @4xl:!grid-cols-4 @4xl:gap-x-4',
 }) => {
   const navigation = useNavigation();
-  const isLoading = navigation.state !== 'idle';
 
-  if (!products) return <ProductGridSkeleton length={5} />;
+  if (navigation.state === 'loading') {
+    return (
+      <div className="@container">
+        {heading && <ProductListHeader heading={heading} actions={actions} />}
+        <div className={className}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <ProductGridSkeleton key={index} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={clsx('@container', {
-        'animate-pulse': isLoading,
-      })}
-    >
-      <ProductListHeader heading={heading} actions={actions} />
+    <div className="@container">
+      {heading && <ProductListHeader heading={heading} actions={actions} />}
 
       <div className={className}>
         {products?.map((product) => (
-          <NavLink prefetch="viewport" key={product.id} to={`/products/${product.handle}`} viewTransition>
+          <NavLink prefetch="viewport" key={product.id} to={`/products/${product.handle}`} className="outline-none" viewTransition>
             {({ isTransitioning }) => <ProductListItem isTransitioning={isTransitioning} product={product} />}
           </NavLink>
         ))}
@@ -41,5 +47,4 @@ export const ProductGrid: FC<ProductListProps> = ({
   );
 };
 
-// required for lazy loading this component
 export default ProductGrid;

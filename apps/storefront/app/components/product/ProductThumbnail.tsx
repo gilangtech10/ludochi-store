@@ -16,34 +16,41 @@ export const ProductThumbnail: FC<ProductThumbnailProps> = ({ product, className
     <figure
       className={clsx(
         'product-thumbnail',
-        'aspect-[4/3] w-full overflow-hidden bg-[#F5F2EB]',
+        'aspect-[4/3] w-full overflow-hidden',
         className,
       )}
       style={{
+        backgroundColor: '#1C1714',
         viewTransitionName: isTransitioning ? 'product-thumbnail' : undefined,
       }}
       {...props}
     >
+      {/* Hover / secondary image */}
       {hoverImage && (
         <Image
           loading="lazy"
           src={hoverImage}
-          alt={product.title}
-          className="h-full w-full object-cover object-center opacity-0 transition-all duration-[1.5s] ease-out grayscale-[30%] sepia-[20%] group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+          alt={product.title || ''}
+          className="h-full w-full object-cover object-center absolute inset-0 opacity-0 sepia-aged group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
         />
       )}
+
+      {/* Primary / thumbnail image */}
       {thumbnailImage ? (
         <Image
           loading="lazy"
           src={thumbnailImage}
-          alt={product.title}
-          className={clsx('h-full w-full object-cover object-center transition-all duration-[1.5s] ease-out grayscale-[30%] sepia-[20%] group-hover:grayscale-0 group-hover:scale-105', {
-            'group-hover:opacity-0': hoverImage,
-            'group-hover:opacity-100': !hoverImage,
-          })}
+          alt={product.title || ''}
+          className={clsx(
+            'h-full w-full object-cover object-center sepia-aged group-hover:scale-105 transition-all duration-700 ease-out',
+            { 'group-hover:opacity-0': hoverImage },
+          )}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center object-cover object-center group-hover/product-card:opacity-75">
+        <div
+          className="flex h-full w-full items-center justify-center"
+          style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', color: '#9C8B7A', textTransform: 'uppercase' }}
+        >
           No Image
         </div>
       )}

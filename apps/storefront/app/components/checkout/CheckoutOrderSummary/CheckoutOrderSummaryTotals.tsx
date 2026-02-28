@@ -16,15 +16,16 @@ export interface CheckoutOrderSummaryTotalsItemProps extends HTMLAttributes<HTML
   region: StoreRegion;
 }
 
-const CheckoutOrderSummaryTotalsItem: FC<CheckoutOrderSummaryTotalsItemProps> = ({
-  label,
-  amount,
-  className,
-  region,
-}) => (
+const CheckoutOrderSummaryTotalsItem: FC<CheckoutOrderSummaryTotalsItemProps> = ({ label, amount, className, region }) => (
   <div className={clsx('flex items-end justify-between text-base', className)}>
-    <dt className="text-xs font-bold uppercase tracking-widest text-[#B0894A]">{label}</dt>
-    <dd className="font-display font-medium text-xl text-[#2C1E16]">{formatPrice(amount || 0, { currency: region?.currency_code })}</dd>
+    <dt
+      style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A962' }}
+    >
+      {label}
+    </dt>
+    <dd style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.15rem', color: '#E8DFD4' }}>
+      {formatPrice(amount || 0, { currency: region?.currency_code })}
+    </dd>
   </div>
 );
 
@@ -38,25 +39,26 @@ export const CheckoutOrderSummaryTotals: FC<CheckoutOrderSummaryTotalsProps> = (
   const total = hasShippingMethod ? cartTotal : cartTotal + estimatedShipping;
 
   return (
-    <div className="border-t border-[#2C1E16]/30 px-4 py-6 sm:px-6 relative z-10">
+    <div className="px-4 py-6 sm:px-6 relative z-10" style={{ borderTop: '1px solid #4A3F35' }}>
       <CheckoutOrderSummaryDiscountCode cart={cart} />
 
       <dl className="flex flex-col gap-4 mt-4">
         <CheckoutOrderSummaryTotalsItem label="Subtotal" amount={cart.item_subtotal} region={cart.region!} />
         {discountTotal > 0 && (
-          <CheckoutOrderSummaryTotalsItem label="Diskon" amount={-discountTotal} region={cart.region!} />
+          <CheckoutOrderSummaryTotalsItem label="Discount" amount={-discountTotal} region={cart.region!} />
         )}
         {hasShippingMethod && (
-          <CheckoutOrderSummaryTotalsItem label="Ongkos Kirim" amount={shippingAmount} region={cart.region!} />
+          <CheckoutOrderSummaryTotalsItem label="Shipping" amount={shippingAmount} region={cart.region!} />
         )}
         {!hasShippingMethod && (
-          <CheckoutOrderSummaryTotalsItem label="Prakiraan Ongkos Kirim" amount={estimatedShipping} region={cart.region!} />
+          <CheckoutOrderSummaryTotalsItem label="Est. Shipping" amount={estimatedShipping} region={cart.region!} />
         )}
-        <CheckoutOrderSummaryTotalsItem label="Pajak" amount={cart.tax_total} region={cart.region!} />
+        <CheckoutOrderSummaryTotalsItem label="Tax" amount={cart.tax_total} region={cart.region!} />
         <CheckoutOrderSummaryTotalsItem
-          label="Total Mahar"
+          label="Order Total"
           amount={total}
-          className="border-t border-[#2C1E16]/30 pt-6 !text-2xl mt-4"
+          className="pt-6 !text-2xl mt-4"
+          style={{ borderTop: '1px solid #4A3F35' }}
           region={cart.region!}
         />
       </dl>
