@@ -1,0 +1,1 @@
+app/components/product/ProductGrid.tsx(46,14): error TS2741: Property 'length' is missing in type '{ key: number; }' but required in type '{ length: number; }'.

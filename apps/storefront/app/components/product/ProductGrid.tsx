@@ -6,6 +6,7 @@ import { NavLink, useNavigation } from 'react-router';
 import { ProductGridSkeleton } from './ProductGridSkeleton';
 import { ProductListHeader, type ProductListHeaderProps } from './ProductListHeader';
 import { ProductListItem } from './ProductListItem';
+import { EmptyProductListItem } from './EmptyProductListItem';
 
 export interface ProductListProps extends Partial<ProductListHeaderProps> {
   products?: StoreProduct[];
@@ -43,7 +44,7 @@ export const ProductGrid: FC<ProductListProps> = ({
         {heading && <ProductListHeader heading={heading} actions={actions} />}
         <div className={className}>
           {Array.from({ length: 4 }).map((_, index) => (
-            <ProductGridSkeleton key={index} />
+            <EmptyProductListItem key={index} />
           ))}
         </div>
       </div>

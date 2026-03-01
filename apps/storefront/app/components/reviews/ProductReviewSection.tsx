@@ -66,6 +66,8 @@ export const ProductReviewSection: FC = () => {
             productReviews={productReviews.product_reviews}
             context={`products/${product.handle}`}
             paginationConfig={{
+              limit: productReviews.limit,
+              offset: productReviews.offset,
               count: productReviews.count,
             }}
           />

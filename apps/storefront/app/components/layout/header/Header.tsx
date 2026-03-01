@@ -9,6 +9,7 @@ import { Bars3Icon } from '@heroicons/react/24/outline';
 import ShoppingBagIcon from '@heroicons/react/24/outline/ShoppingBagIcon';
 import clsx from 'clsx';
 import { type FC, useState } from 'react';
+import { motion } from 'framer-motion';
 import { HeaderSideNav } from './HeaderSideNav';
 import { useActiveSection } from './useActiveSection';
 
@@ -73,23 +74,29 @@ export const Header: FC<HeaderProps> = () => {
                   {headerNavigationItems && (
                     <div className="hidden h-full gap-6 md:flex relative z-10">
                       {headerNavigationItems.slice(0, 6).map(({ id, new_tab, ...navItemProps }, index) => (
-                        <URLAwareNavLink
+                        <motion.div 
                           key={id}
-                          {...navItemProps}
-                          newTab={new_tab}
-                          className={({ isActive }) =>
-                            clsx('my-4 flex items-center whitespace-nowrap text-lg italic transition-colors duration-200', {
-                              'border-b border-[#C9A962]':
-                                isActive &&
-                                (!navItemProps.url.includes('#') ||
-                                  activeSection === navItemProps.url.split('#')[1].split('?')[0]),
-                            })
-                          }
-                          style={{ fontFamily: 'var(--font-display)', color: '#E8DFD4' }}
-                          prefetch="viewport"
+                          whileHover={{ y: -2, opacity: 0.8 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                          className="flex items-center"
                         >
-                          {navItemProps.label}
-                        </URLAwareNavLink>
+                          <URLAwareNavLink
+                            {...navItemProps}
+                            newTab={new_tab}
+                            className={({ isActive }) =>
+                              clsx('my-4 flex items-center whitespace-nowrap text-lg italic transition-colors duration-200', {
+                                'border-b border-[#C9A962]':
+                                  isActive &&
+                                  (!navItemProps.url.includes('#') ||
+                                    activeSection === navItemProps.url.split('#')[1].split('?')[0]),
+                              })
+                            }
+                            style={{ fontFamily: 'var(--font-display)', color: '#E8DFD4' }}
+                            prefetch="viewport"
+                          >
+                            {navItemProps.label}
+                          </URLAwareNavLink>
+                        </motion.div>
                       ))}
                     </div>
                   )}
