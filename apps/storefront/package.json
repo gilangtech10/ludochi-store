@@ -103,6 +103,7 @@
     "common-tags": "^1.8.2",
     "dotenv": "^16.4.5",
     "form-data": "^4.0.2",
+    "framer-motion": "^12.34.3",
     "imask": "^6.4.2",
     "isbot": "^5.1.27",
     "js-base64": "^3.7.2",

@@ -31,6 +31,22 @@ import truncate from 'lodash/truncate';
 import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
+import { motion, Variants } from 'framer-motion';
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 const getBreadcrumbs = (product: StoreProduct) => {
   const breadcrumbs: Breadcrumb[] = [
@@ -258,10 +274,15 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
               </div>
 
               {/* ── Main two-column layout ── */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 xl:gap-24">
+              <motion.div 
+                className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 xl:gap-24"
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
 
                 {/* ── Left: Image Gallery ── */}
-                <div className="mb-10 lg:mb-0">
+                <motion.div variants={fadeUpVariant} className="mb-10 lg:mb-0">
                   {/* Ornate frame wrapper */}
                   <div
                     className="ornate-frame ornate-frame-lg relative p-3"
@@ -279,13 +300,13 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
                       </p>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* ── Right: Product Info ── */}
-                <div className="flex flex-col px-4 sm:px-0">
+                <motion.div variants={staggerContainer} className="flex flex-col px-4 sm:px-0">
 
                   {/* Header */}
-                  <header className="pb-6 mb-6 border-b border-[#4A3F35]">
+                  <motion.header variants={fadeUpVariant} className="pb-6 mb-6 border-b border-[#4A3F35]">
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <span className="academia-label mb-3 block">
@@ -311,7 +332,7 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
                     <div className="mt-4">
                       <ProductReviewStars reviewsCount={reviewsCount} reviewStats={reviewStats} />
                     </div>
-                  </header>
+                  </motion.header>
 
                   {/* Price */}
                   <section aria-labelledby="product-information" className="mb-8">
@@ -487,8 +508,8 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
                     </nav>
                   )}
 
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </Container>
           </addToCartFetcher.Form>
         </RemixFormProvider>

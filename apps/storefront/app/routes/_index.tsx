@@ -4,6 +4,22 @@ import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { getMergedPageMeta } from '@libs/util/page';
 import { ProductPrice } from '@app/components/product/ProductPrice';
 import { useRegion } from '@app/hooks/useRegion';
+import { motion, Variants } from 'framer-motion';
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 export const loader = async (args: LoaderFunctionArgs) => {
   const { products } = await fetchProducts(args.request, { limit: 3 });
@@ -54,28 +70,36 @@ export default function IndexRoute() {
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 flex flex-col lg:flex-row items-center gap-16 lg:gap-24 relative z-10">
 
           {/* ── Left: Text ── */}
-          <div className="w-full lg:w-[55%] flex flex-col items-center lg:items-start text-center lg:text-left">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="w-full lg:w-[55%] flex flex-col items-center lg:items-start text-center lg:text-left"
+          >
 
-            <span className="academia-label mb-8">Volume I &nbsp;·&nbsp; Lumer Donat &amp; Mochi — Jakarta</span>
+            <motion.span variants={fadeUpVariant} className="academia-label mb-8">Volume I &nbsp;·&nbsp; Lumer Donat &amp; Mochi — Jakarta</motion.span>
 
-            <h1
+            <motion.h1
+              variants={fadeUpVariant}
               className="text-5xl md:text-6xl lg:text-[5.5rem] leading-[1.08] tracking-tight mb-8"
               style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
             >
               Your Favourite<br />
               <em style={{ color: '#C9A962' }}>Sweet</em> Retreat.
-            </h1>
+            </motion.h1>
 
-            <p
+            <motion.p
+              variants={fadeUpVariant}
               className="text-lg md:text-xl leading-relaxed max-w-lg mb-12"
               style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.8)' }}
             >
               Enjoy our freshly-made homemade donuts, pillowy mochi, quality coffee
               &amp; matcha in a cozy aesthetic café. Dine-in, take away, or order online
               — LuDoChi is always here for you.
-            </p>
+            </motion.p>
 
-            <div className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
+            <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
               <Link to="/products" className="btn-brass engraved w-full sm:w-auto gap-3">
                 Explore Our Menu
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
@@ -85,11 +109,17 @@ export default function IndexRoute() {
               <Link to="/about-us" className="btn-outline-brass w-full sm:w-auto">
                 Our Story
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* ── Right: Image in vintage frame ── */}
-          <div className="w-full lg:w-[45%] flex justify-center lg:justify-end">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, margin: "-100px" }}
+            className="w-full lg:w-[45%] flex justify-center lg:justify-end"
+          >
             <div className="ornate-frame ornate-frame-lg relative w-full max-w-[480px] p-3 group" style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}>
 
               {/* Arch-top image container */}
@@ -111,7 +141,7 @@ export default function IndexRoute() {
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </section>
@@ -124,23 +154,36 @@ export default function IndexRoute() {
         <div className="max-w-7xl mx-auto relative z-10">
 
           {/* Section header */}
-          <div className="text-center mb-20 max-w-2xl mx-auto flex flex-col items-center">
-            <div className="academia-label-row justify-center mx-auto mb-6">Volume II &nbsp;·&nbsp; Featured Collection</div>
-            <h2 className="text-4xl md:text-5xl italic text-center w-full" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}>
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="text-center mb-20 max-w-2xl mx-auto flex flex-col items-center"
+          >
+            <motion.div variants={fadeUpVariant} className="academia-label-row justify-center mx-auto mb-6">Volume II &nbsp;·&nbsp; Featured Collection</motion.div>
+            <motion.h2 variants={fadeUpVariant} className="text-4xl md:text-5xl italic text-center w-full" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}>
               Curated Menu Selections
-            </h2>
-            <div className="ornate-divider mt-10 mx-auto w-64" />
-          </div>
+            </motion.h2>
+            <motion.div variants={fadeUpVariant} className="ornate-divider mt-10 mx-auto w-64" />
+          </motion.div>
 
           {/* Product grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12"
+          >
             {products.map((product: any, index: number) => {
               const thumbnail = product.thumbnail || 'https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=800&auto=format&fit=crop';
               const isNew = product.tags?.some((t: any) => t.value.toLowerCase() === 'new');
               const volumeNums = ['I', 'II', 'III'];
 
               return (
-                <div
+                <motion.div
+                  variants={fadeUpVariant}
                   key={product.id}
                   className="academia-card group flex flex-col overflow-hidden"
                 >
@@ -207,10 +250,10 @@ export default function IndexRoute() {
                       </Link>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
           {/* View all link */}
           <div className="text-center mt-20">
@@ -234,10 +277,16 @@ export default function IndexRoute() {
         id="about"
         style={{ backgroundColor: '#251E19' }}
       >
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24"
+        >
 
           {/* Left: Framed image */}
-          <div className="w-full lg:w-1/2 ornate-frame p-4" style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}>
+          <motion.div variants={fadeUpVariant} className="w-full lg:w-1/2 ornate-frame p-4" style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}>
             <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/5', border: '1px solid #4A3F35' }}>
               <img
                 src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=1200&auto=format&fit=crop"
@@ -251,10 +300,10 @@ export default function IndexRoute() {
             >
               Fig. 2 — The Main Kitchen, LuDoChi
             </p>
-          </div>
+          </motion.div>
 
           {/* Right: Text */}
-          <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <motion.div variants={fadeUpVariant} className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
             <span className="academia-label mb-8">Volume III &nbsp;·&nbsp; Our Story</span>
 
             <h2
@@ -309,9 +358,9 @@ export default function IndexRoute() {
                 <p className="academia-label mt-2">Handcrafted Daily</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-        </div>
+        </motion.div>
       </section>
 
 
@@ -323,8 +372,14 @@ export default function IndexRoute() {
         id="features"
         style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
       >
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24 max-w-2xl mx-auto border-b border-[#4A3F35] pb-12 flex flex-col items-center">
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="max-w-7xl mx-auto"
+        >
+          <motion.div variants={fadeUpVariant} className="text-center mb-24 max-w-2xl mx-auto border-b border-[#4A3F35] pb-12 flex flex-col items-center">
             <div className="academia-label-row justify-center mx-auto mb-6">Volume IV &nbsp;·&nbsp; Pillars of Excellence</div>
             <h2
               className="text-4xl md:text-5xl italic text-center w-full"
@@ -332,9 +387,9 @@ export default function IndexRoute() {
             >
               Our Principles &amp; Craft
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
+          <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
             {[
               {
                 num: 'I',
@@ -357,7 +412,8 @@ export default function IndexRoute() {
                 body: 'All LuDoChi products are guaranteed 100% Halal, using safe and certified ingredients, giving complete peace of mind to every customer who enjoys our products.',
               },
             ].map((item, i) => (
-              <div
+              <motion.div
+                variants={fadeUpVariant}
                 key={item.num}
                 className={`flex flex-col relative pr-6${i < 3 ? ' before:hidden lg:before:block before:absolute before:-right-6 before:top-0 before:h-full before:w-px before:bg-[#4A3F35]' : ''}`}
               >
@@ -371,10 +427,10 @@ export default function IndexRoute() {
                 <p className="leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
                   {item.body}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
 
@@ -385,11 +441,17 @@ export default function IndexRoute() {
         className="py-24 md:py-32 px-6"
         style={{ backgroundColor: '#251E19', color: '#E8DFD4' }}
       >
-        <div className="max-w-7xl mx-auto border border-[#4A3F35] p-2 md:p-4">
+        <motion.div 
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="max-w-7xl mx-auto border border-[#4A3F35] p-2 md:p-4"
+        >
           <div className="ornate-frame border border-[#4A3F35] p-8 md:p-16">
 
             {/* Header */}
-            <div className="flex flex-col lg:flex-row justify-between items-start gap-12 pb-16 mb-16 border-b border-[#4A3F35]">
+            <motion.div variants={fadeUpVariant} className="flex flex-col lg:flex-row justify-between items-start gap-12 pb-16 mb-16 border-b border-[#4A3F35]">
               <div className="max-w-xl">
                 <span className="academia-label mb-6 block">Epilogue</span>
                 <h2
@@ -407,13 +469,13 @@ export default function IndexRoute() {
                   to visiting us directly at our Jakarta location.
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Info columns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-12">
 
               {/* Hours */}
-              <div className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
+              <motion.div variants={fadeUpVariant} className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
                 <h3 className="academia-label mb-6">I. &nbsp;Hours of Operation</h3>
                 <div className="space-y-4" style={{ fontFamily: 'var(--font-body)' }}>
                   <div className="flex justify-between border-b border-[#4A3F35] pb-2">
@@ -425,10 +487,10 @@ export default function IndexRoute() {
                     <span>09:00 – 22:00</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Location */}
-              <div className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
+              <motion.div variants={fadeUpVariant} className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
                 <h3 className="academia-label mb-6">II. &nbsp;Our Location</h3>
                 <div style={{ fontFamily: 'var(--font-body)' }}>
                   <p className="leading-relaxed mb-4" style={{ color: '#E8DFD4' }}>
@@ -444,10 +506,10 @@ export default function IndexRoute() {
                     Navigate via Maps →
                   </a>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Contact */}
-              <div>
+              <motion.div variants={fadeUpVariant}>
                 <h3 className="academia-label mb-6">III. &nbsp;Correspondence</h3>
                 <div
                   className="flex flex-col gap-3"
@@ -463,11 +525,11 @@ export default function IndexRoute() {
                     +62-811-2222-3333
                   </a>
                 </div>
-              </div>
+              </motion.div>
 
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
     </div>

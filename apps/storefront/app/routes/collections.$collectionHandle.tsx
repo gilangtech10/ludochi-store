@@ -5,6 +5,22 @@ import { fetchProducts } from '@libs/util/server/products.server';
 import clsx from 'clsx';
 import { LoaderFunctionArgs, redirect } from 'react-router';
 import { NavLink, useLoaderData } from 'react-router';
+import { motion, Variants } from 'framer-motion';
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const handle = params.collectionHandle as string;
@@ -65,31 +81,43 @@ export default function ProductCollectionRoute() {
           style={{ background: 'linear-gradient(180deg, transparent 0%, #4A3F35 30%, #4A3F35 70%, transparent 100%)' }}
         />
 
-        <div className="max-w-3xl mx-auto px-6 relative z-10">
-          <div className="academia-label-row mb-6 max-w-[10rem] mx-auto">Volume · Collection</div>
+        <motion.div 
+          className="max-w-3xl mx-auto px-6 relative z-10"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={fadeUpVariant} className="academia-label-row mb-6 max-w-[10rem] mx-auto">Volume · Collection</motion.div>
 
-          <h1
+          <motion.h1
+            variants={fadeUpVariant}
             className="text-5xl md:text-7xl italic leading-tight mb-6"
             style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
           >
             {collection.title}
-          </h1>
+          </motion.h1>
 
-          <div className="ornate-divider w-48 mx-auto mb-4" />
+          <motion.div variants={fadeUpVariant} className="ornate-divider w-48 mx-auto mb-4" />
 
           {count > 0 && (
-            <p
+            <motion.p
+              variants={fadeUpVariant}
               style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#9C8B7A' }}
             >
               {count} {count === 1 ? 'Entry' : 'Entries'} in this Volume
-            </p>
+            </motion.p>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* ── Collection Tabs ── */}
       {collections.length > 1 && (
-        <div className="flex justify-center pt-10 pb-2 relative z-10">
+        <motion.div 
+          className="flex justify-center pt-10 pb-2 relative z-10"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUpVariant}
+        >
           <div
             className="inline-flex gap-1 p-1"
             style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
@@ -113,7 +141,7 @@ export default function ProductCollectionRoute() {
               </NavLink>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ── Product Grid ── */}

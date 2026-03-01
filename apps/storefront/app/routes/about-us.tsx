@@ -1,6 +1,22 @@
 import { Container } from '@app/components/common/container';
 import { getMergedPageMeta } from '@libs/util/page';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import { motion, Variants } from 'framer-motion';
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
 
@@ -58,7 +74,10 @@ export const meta: MetaFunction<typeof loader> = getMergedPageMeta;
 
 const LocationEntry = ({ volume, title, addressLines, phone, hours, imageUrl, description }: LocationProps) => {
   return (
-    <article className="grid grid-cols-1 lg:grid-cols-5 gap-0 border-b border-[#4A3F35] last:border-0">
+    <motion.article 
+      variants={fadeUpVariant}
+      className="grid grid-cols-1 lg:grid-cols-5 gap-0 border-b border-[#4A3F35] last:border-0"
+    >
       {/* Volume label sidebar */}
       <div
         className="hidden lg:flex flex-col items-center justify-start pt-16 border-r border-[#4A3F35] pr-8"
@@ -132,7 +151,7 @@ const LocationEntry = ({ volume, title, addressLines, phone, hours, imageUrl, de
 
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 };
 
@@ -167,23 +186,30 @@ export default function AboutUsRoute() {
           />
         ))}
 
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <motion.div 
+          className="max-w-4xl mx-auto px-6 text-center relative z-10"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
           {/* Overline ornament */}
-          <div className="academia-label-row mb-8 max-w-[12rem] mx-auto">
+          <motion.div variants={fadeUpVariant} className="academia-label-row mb-8 max-w-[12rem] mx-auto">
             Institutional Record
-          </div>
+          </motion.div>
 
           {/* Main heading */}
-          <h1
+          <motion.h1
+            variants={fadeUpVariant}
             className="text-6xl md:text-8xl leading-[1.02] tracking-tight mb-8"
             style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
           >
             Our{' '}
             <em style={{ color: '#C9A962', fontStyle: 'italic' }}>Chronicle</em>
-          </h1>
+          </motion.h1>
 
           {/* Drop-cap opening paragraph */}
-          <p
+          <motion.p
+            variants={fadeUpVariant}
             className="text-xl md:text-2xl italic leading-relaxed max-w-2xl mx-auto mb-10"
             style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.75)' }}
           >
@@ -194,12 +220,13 @@ export default function AboutUsRoute() {
             <strong style={{ color: '#E8DFD4', fontStyle: 'normal' }}>
               for every young person seeking a luxury hangout that feels like home.
             </strong>
-          </p>
+          </motion.p>
 
           {/* Ornate divider */}
-          <div className="ornate-divider w-48 mx-auto mb-4" />
+          <motion.div variants={fadeUpVariant} className="ornate-divider w-48 mx-auto mb-4" />
 
-          <p
+          <motion.p
+            variants={fadeUpVariant}
             style={{
               fontFamily: 'var(--font-label)',
               fontSize: '0.6rem',
@@ -209,8 +236,8 @@ export default function AboutUsRoute() {
             }}
           >
             Est. MM·XXVI &nbsp;·&nbsp; Jakarta &nbsp;·&nbsp; Donat &amp; Mochi
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
 
       {/* ══════════════════════════════════════════════
@@ -221,23 +248,30 @@ export default function AboutUsRoute() {
         style={{ backgroundColor: '#1A1512' }}
       >
         <Container className="py-20 md:py-28 relative z-10">
-          {/* Section heading */}
-          <div className="text-center mb-16 md:mb-20">
-            <span className="academia-label mb-4 block">Article I</span>
-            <h2
-              className="text-4xl md:text-5xl"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              The <em style={{ color: '#C9A962' }}>Founding</em> Principles
-            </h2>
-          </div>
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {/* Section heading */}
+            <motion.div variants={fadeUpVariant} className="text-center mb-16 md:mb-20">
+              <span className="academia-label mb-4 block">Article I</span>
+              <h2
+                className="text-4xl md:text-5xl"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
+              >
+                The <em style={{ color: '#C9A962' }}>Founding</em> Principles
+              </h2>
+            </motion.div>
 
-          {/* Principles grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px" style={{ borderColor: '#4A3F35', border: '1px solid #4A3F35' }}>
-            {principles.map((p) => (
-              <div
-                key={p.numeral}
-                className="p-8 md:p-10 group transition-colors duration-300 hover:bg-[#1C1714]"
+            {/* Principles grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-px" style={{ borderColor: '#4A3F35', border: '1px solid #4A3F35' }}>
+              {principles.map((p) => (
+                <motion.div
+                  variants={fadeUpVariant}
+                  key={p.numeral}
+                  className="p-8 md:p-10 group transition-colors duration-300 hover:bg-[#1C1714]"
                 style={{ borderRight: '1px solid #4A3F35', borderBottom: '1px solid #4A3F35' }}
               >
                 <div
@@ -263,9 +297,10 @@ export default function AboutUsRoute() {
                 >
                   {p.text}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
+          </motion.div>
         </Container>
       </div>
 
@@ -274,29 +309,36 @@ export default function AboutUsRoute() {
       ══════════════════════════════════════════════ */}
       <div className="relative">
         <Container className="py-20 md:py-28 relative z-10">
-          {/* Section heading */}
-          <div className="text-center mb-16 md:mb-20">
-            <span className="academia-label mb-4 block">Article II</span>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
+            {/* Section heading */}
+            <motion.div variants={fadeUpVariant} className="text-center mb-16 md:mb-20">
+              <span className="academia-label mb-4 block">Article II</span>
             <h2
               className="text-4xl md:text-5xl"
               style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
             >
               Find Your <em style={{ color: '#C9A962' }}>Chapter</em>
             </h2>
-            <p
-              className="italic mt-4 text-base max-w-md mx-auto"
-              style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.55)' }}
-            >
-              Three locations, each a distinct chapter in the same story. Visit us.
-            </p>
-          </div>
+              <p
+                className="italic mt-4 text-base max-w-md mx-auto"
+                style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.55)' }}
+              >
+                Three locations, each a distinct chapter in the same story. Visit us.
+              </p>
+            </motion.div>
 
-          {/* Location entries */}
-          <div className="border-t border-[#4A3F35]">
-            {locations.map((location, i) => (
-              <LocationEntry key={i} {...location} />
-            ))}
-          </div>
+            {/* Location entries */}
+            <div className="border-t border-[#4A3F35]">
+              {locations.map((location, i) => (
+                <LocationEntry key={i} {...location} />
+              ))}
+            </div>
+          </motion.div>
         </Container>
       </div>
 

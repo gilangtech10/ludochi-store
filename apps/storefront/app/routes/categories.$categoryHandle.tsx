@@ -5,6 +5,22 @@ import { fetchProducts } from '@libs/util/server/products.server';
 import clsx from 'clsx';
 import { LoaderFunctionArgs, redirect } from 'react-router';
 import { NavLink, useLoaderData } from 'react-router';
+import { motion, Variants } from 'framer-motion';
+
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const handle = params.categoryHandle as string;
@@ -53,28 +69,39 @@ export default function ProductCategoryRoute() {
 
       <Container className="relative z-10 pt-12 pb-24">
 
-        {/* ── Page heading ─────────────────────────────────────── */}
-        <div className="text-center mt-12 md:mt-20 mb-6">
-          <span
-            className="academia-label mb-4 block"
-            aria-hidden="true"
-          >
-            Collection &nbsp;·&nbsp; Catalogue
-          </span>
+        <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+        >
+          {/* ── Page heading ─────────────────────────────────────── */}
+          <motion.div variants={fadeUpVariant} className="text-center mt-12 md:mt-20 mb-6">
+            <span
+              className="academia-label mb-4 block"
+              aria-hidden="true"
+            >
+              Collection &nbsp;·&nbsp; Catalogue
+            </span>
 
-          <h1
-            className="text-5xl xs:text-6xl md:text-7xl italic leading-tight"
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
-          >
-            {category.name}
-          </h1>
+            <h1
+              className="text-5xl xs:text-6xl md:text-7xl italic leading-tight"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
+            >
+              {category.name}
+            </h1>
 
-          <div className="ornate-divider w-48 mx-auto mt-8" />
-        </div>
+            <div className="ornate-divider w-48 mx-auto mt-8" />
+          </motion.div>
+        </motion.div>
 
         {/* ── Category tabs ─────────────────────────────────── */}
         {categories.length > 1 && (
-          <div className="flex justify-center mb-16 mt-4">
+          <motion.div 
+            className="flex justify-center mb-16 mt-4"
+            initial="hidden"
+            animate="visible"
+            variants={fadeUpVariant}
+          >
             <div
               className="inline-flex gap-1 p-1 rounded"
               style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
@@ -102,7 +129,7 @@ export default function ProductCategoryRoute() {
                 </NavLink>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ── Product grid ──────────────────────────────────── */}
