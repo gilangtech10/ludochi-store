@@ -1,4 +1,5 @@
 import { CartDrawer } from '@app/components/cart/CartDrawer';
+import { WhatsAppButton } from '@app/components/common/WhatsAppButton/WhatsAppButton';
 import clsx from 'clsx';
 import type { FC, ReactNode } from 'react';
 import { Footer } from './footer/Footer';
@@ -17,6 +18,7 @@ export const Page: FC<PageProps> = ({ className, children }) => {
         <div className="w-full">{children}</div>
       </main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
