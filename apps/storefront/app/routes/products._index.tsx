@@ -40,9 +40,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   let order: string | undefined;
-  if (sort === 'price_asc') order = 'variants.prices.amount';
-  else if (sort === 'price_desc') order = '-variants.prices.amount';
-  else if (sort === 'name_asc') order = 'title';
+  if (sort === 'name_asc') order = 'title';
+  else if (sort === 'name_desc') order = '-title';
   else if (sort === 'newest') order = '-created_at';
 
   const { products, count } = await fetchProducts(request, {
@@ -56,20 +55,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return { products, count, limit, offset, q: q ?? null, activeCategory, categoryHandle: categoryHandle ?? null, sort: sort ?? null };
 };
 
-type SortValue = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+type SortValue = 'newest' | 'name_asc' | 'name_desc';
 
 const SORT_OPTIONS: { label: string; value: SortValue }[] = [
   { label: 'Terbaru', value: 'newest' },
-  { label: 'Harga Terendah', value: 'price_asc' },
-  { label: 'Harga Tertinggi', value: 'price_desc' },
   { label: 'Nama A-Z', value: 'name_asc' },
+  { label: 'Nama Z-A', value: 'name_desc' },
 ];
 
 const SORT_LABEL_MAP: Record<string, string> = {
   newest: 'Terbaru',
-  price_asc: 'Harga Terendah',
-  price_desc: 'Harga Tertinggi',
   name_asc: 'Nama A-Z',
+  name_desc: 'Nama Z-A',
 };
 
 export type ProductsIndexRouteLoader = typeof loader;
