@@ -1,5 +1,6 @@
 import { ProductListWithPagination } from '@app/components/product/ProductListWithPagination';
 import { fetchProducts } from '@libs/util/server/products.server';
+import { listCategories } from '@libs/util/server/data/categories.server';
 import { LoaderFunctionArgs } from 'react-router';
 import { Form, useLoaderData, Link, useLocation, useNavigation } from 'react-router';
 import { motion, Variants } from 'framer-motion';
@@ -11,18 +12,40 @@ import clsx from 'clsx';
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const q = data?.q;
-  return [{ title: q ? `Pencarian "${q}" — LuDo-Chi` : 'Menu — LuDo-Chi' }];
+  const cat = data?.activeCategory;
+  if (q) return [{ title: `Pencarian "${q}" — LuDo-Chi` }];
+  if (cat) return [{ title: `${cat} — Menu — LuDo-Chi` }];
+  return [{ title: 'Menu — LuDo-Chi' }];
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const q = url.searchParams.get('q')?.trim() || undefined;
+  const categoryHandle = url.searchParams.get('category')?.trim() || undefined;
   const page = Number(url.searchParams.get('page') ?? 1);
   const limit = 12;
   const offset = (page - 1) * limit;
 
-  const { products, count } = await fetchProducts(request, { q, limit, offset });
-  return { products, count, limit, offset, q: q ?? null };
+  let categoryId: string | undefined;
+  let activeCategory: string | null = null;
+
+  if (categoryHandle) {
+    const categories = await listCategories();
+    const matched = categories.find((c: any) => c.handle === categoryHandle);
+    if (matched) {
+      categoryId = matched.id;
+      activeCategory = matched.name;
+    }
+  }
+
+  const { products, count } = await fetchProducts(request, {
+    q,
+    category_id: categoryId,
+    limit,
+    offset,
+  });
+
+  return { products, count, limit, offset, q: q ?? null, activeCategory, categoryHandle: categoryHandle ?? null };
 };
 
 export type ProductsIndexRouteLoader = typeof loader;
@@ -38,15 +61,15 @@ const stagger: Variants = {
 };
 
 const CATEGORIES = [
-  { label: 'Semua', href: '/products' },
-  { label: 'Donat', href: '/categories/donut' },
-  { label: 'Mochi', href: '/categories/mochi' },
-  { label: 'Minuman', href: '/categories/drinks' },
-  { label: 'Bundle', href: '/categories/bundle' },
+  { label: 'Semua', href: '/products', handle: null },
+  { label: 'Donat', href: '/products?category=donut', handle: 'donut' },
+  { label: 'Mochi', href: '/products?category=mochi', handle: 'mochi' },
+  { label: 'Minuman', href: '/products?category=drinks', handle: 'drinks' },
+  { label: 'Bundle', href: '/products?category=bundle', handle: 'bundle' },
 ];
 
 export default function ProductsIndexRoute() {
-  const { products, count, limit, offset, q } = useLoaderData<ProductsIndexRouteLoader>();
+  const { products, count, limit, offset, q, activeCategory, categoryHandle } = useLoaderData<ProductsIndexRouteLoader>();
   const location = useLocation();
   const navigation = useNavigation();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,9 +105,9 @@ export default function ProductsIndexRoute() {
             className="text-[15px] font-semibold leading-tight"
             style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
           >
-            {q ? 'Hasil Pencarian' : 'Menu Kami'}
+            {q ? 'Hasil Pencarian' : activeCategory ?? 'Menu Kami'}
           </h1>
-          {!q && (
+          {!q && !activeCategory && (
             <span className="text-[10px] tracking-wider" style={{ color: '#9C8070', fontFamily: 'var(--font-label)' }}>
               ドーナツと餅パン
             </span>
@@ -139,13 +162,13 @@ export default function ProductsIndexRoute() {
               className="text-3xl lg:text-4xl"
               style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
             >
-              {q ? `Hasil untuk "${q}"` : 'Menu Kami'}
+              {q ? `Hasil untuk "${q}"` : activeCategory ?? 'Menu Kami'}
             </h1>
             <p
               className="text-sm mt-1"
               style={{ color: 'rgba(255,250,244,0.5)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
             >
-              {count > 0 ? `${count} produk ditemukan` : q ? 'Tidak ada produk yang cocok' : 'Jelajahi semua menu'}
+              {count > 0 ? `${count} produk ditemukan` : q ? 'Tidak ada produk yang cocok' : activeCategory ? `Koleksi ${activeCategory}` : 'Jelajahi semua menu'}
             </p>
           </motion.div>
 
@@ -277,10 +300,7 @@ export default function ProductsIndexRoute() {
         >
           <div className="flex items-center gap-2 px-4 py-2.5 w-max md:px-6 md:py-3">
             {CATEGORIES.map((cat) => {
-              const isActive =
-                cat.href === '/products'
-                  ? location.pathname === '/products' && !q
-                  : location.pathname.startsWith(cat.href);
+              const isActive = cat.handle === categoryHandle;
 
               return (
                 <Link
@@ -309,16 +329,20 @@ export default function ProductsIndexRoute() {
       )}
 
       {/* ═══════════════════════════════════════════
-          SEARCH CONTEXT BAR
+          FILTER CONTEXT BAR
           ═══════════════════════════════════════════ */}
-      {q && (
+      {(q || activeCategory) && (
         <div
           className="flex items-center justify-between px-4 py-2.5 border-b md:px-6"
           style={{ backgroundColor: '#FFF3E4', borderColor: 'rgba(240,230,214,0.5)' }}
         >
           <p className="text-xs" style={{ color: '#6B3A1F', fontFamily: 'var(--font-body)' }}>
-            <span style={{ fontWeight: 700 }}>{count}</span> hasil untuk{' '}
-            <span style={{ fontWeight: 700 }}>"{q}"</span>
+            <span style={{ fontWeight: 700 }}>{count}</span>{' '}
+            {q ? (
+              <>hasil untuk <span style={{ fontWeight: 700 }}>"{q}"</span></>
+            ) : (
+              <>produk di <span style={{ fontWeight: 700 }}>{activeCategory}</span></>
+            )}
           </p>
           <Link
             to="/products"
@@ -342,7 +366,7 @@ export default function ProductsIndexRoute() {
               className="text-sm md:text-base font-semibold"
               style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
             >
-              {q ? `Hasil untuk "${q}"` : 'Semua Menu'}
+              {q ? `Hasil untuk "${q}"` : activeCategory ?? 'Semua Menu'}
             </h2>
             <span
               className="text-[11px] md:text-xs font-medium"
@@ -380,13 +404,13 @@ export default function ProductsIndexRoute() {
                 className="text-sm md:text-base font-semibold"
                 style={{ color: '#3D2B1F', fontFamily: 'var(--font-display)' }}
               >
-                {q ? `Tidak ada hasil untuk "${q}"` : 'Belum ada produk'}
+                {q ? `Tidak ada hasil untuk "${q}"` : activeCategory ? `Belum ada produk di kategori ${activeCategory}` : 'Belum ada produk'}
               </p>
               <p className="text-xs md:text-sm mt-1.5" style={{ color: '#9C8070', fontFamily: 'var(--font-body)' }}>
-                {q ? 'Coba kata kunci lain atau jelajahi semua menu.' : 'Produk segera hadir.'}
+                {q ? 'Coba kata kunci lain atau jelajahi semua menu.' : activeCategory ? 'Coba kategori lain atau lihat semua menu.' : 'Produk segera hadir.'}
               </p>
             </div>
-            {q && (
+            {(q || activeCategory) && (
               <Link
                 to="/products"
                 className="text-xs font-semibold px-6 py-3 rounded-full transition-all duration-200 active:scale-95"

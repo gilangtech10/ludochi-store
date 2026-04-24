@@ -276,7 +276,7 @@ export const ProductTemplate = ({ product }: ProductTemplateProps) => {
                     {product.categories.map((cat, i) => (
                       <Link
                         key={i}
-                        to={`/categories/${cat.handle}`}
+                        to={`/products?category=${cat.handle}`}
                         className="px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95"
                         style={{
                           backgroundColor: '#FFF3E4',

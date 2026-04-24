@@ -33,10 +33,10 @@ export const meta: MetaFunction<typeof loader> = getMergedPageMeta;
 
 const CATEGORIES = [
   { label: 'Semua',   href: '/products' },
-  { label: 'Donat',   href: '/categories/donut' },
-  { label: 'Mochi',   href: '/categories/mochi' },
-  { label: 'Minuman', href: '/categories/drinks' },
-  { label: 'Bundle',  href: '/categories/bundle' },
+  { label: 'Donat',   href: '/products?category=donut' },
+  { label: 'Mochi',   href: '/products?category=mochi' },
+  { label: 'Minuman', href: '/products?category=drinks' },
+  { label: 'Bundle',  href: '/products?category=bundle' },
 ];
 
 function useGreeting() {
