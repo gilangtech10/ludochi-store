@@ -19,18 +19,15 @@ export const ProductListHeader: FC<ProductListHeaderProps> = ({ heading, childre
       <div className="w-full flex-1 md:w-auto">
         <div className="inline-grid gap-3">
           {(heading || children) && (
-            <>
-              <span className="academia-label block">— Curated Selection —</span>
-              <h2
-                className="text-3xl md:text-4xl"
-                style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontStyle: 'italic', color: '#E8DFD4' }}
-              >
-                {heading || children}
-              </h2>
-            </>
+            <h2
+              className="text-xl font-semibold"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+            >
+              {heading || children}
+            </h2>
           )}
           {text && (
-            <p style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.65)', fontStyle: 'italic' }}>
+            <p className="text-sm" style={{ fontFamily: 'var(--font-body)', color: '#9C8070' }}>
               {text}
             </p>
           )}
@@ -47,7 +44,7 @@ export const ProductListHeader: FC<ProductListHeaderProps> = ({ heading, childre
                 url={url}
                 prefetch="render"
                 className="flex items-center transition-colors"
-                style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C9A962' }}
+                style={{ fontFamily: 'var(--font-label)', fontSize: '0.7rem', letterSpacing: '0.05em', color: '#C47C3A' }}
               >
                 {label}
                 <ArrowRightIcon className="ml-1.5 h-3.5" />

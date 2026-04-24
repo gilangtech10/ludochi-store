@@ -42,11 +42,11 @@ export function parseCookie(str: string | null) {
 // Medusa cookie helpers
 
 export const setAuthToken = async (headers: Headers, token: string) => {
-  setCookie(headers, authCookie, token);
+  await setCookie(headers, authCookie, token);
 };
 
-export const removeAuthToken = (headers: Headers) => {
-  destroyCookie(headers, authCookie);
+export const removeAuthToken = async (headers: Headers) => {
+  await destroyCookie(headers, authCookie);
 };
 
 export const getCartId = (headers: Headers) => {

@@ -52,16 +52,17 @@ const PaginationItem: FC<PaginationItemProps> = ({ className, currentPage, page,
       viewTransition
       className={clsx(
         className,
-        'relative inline-flex items-center justify-center w-10 h-10 text-sm border transition-colors duration-200',
+        'relative inline-flex items-center justify-center w-9 h-9 text-sm rounded-lg border transition-colors duration-200',
         isCurrent
-          ? 'border-[#C9A962] text-[#1C1714] font-medium'
-          : 'border-[#4A3F35] text-[#9C8B7A] hover:border-[#C9A962]/50 hover:text-[#E8DFD4]',
+          ? 'border-[#6B3A1F]'
+          : 'border-[#E2CCB0] hover:border-[#C47C3A]',
       )}
       style={{
         fontFamily: 'var(--font-label)',
-        fontSize: '0.65rem',
-        letterSpacing: '0.1em',
-        backgroundColor: isCurrent ? '#C9A962' : '#251E19',
+        fontSize: '0.7rem',
+        letterSpacing: '0.05em',
+        backgroundColor: isCurrent ? '#6B3A1F' : '#FFFFFF',
+        color: isCurrent ? '#FFFAF4' : '#9C8070',
       }}
       aria-current={isCurrent ? 'page' : 'false'}
       to={props.href}
@@ -88,13 +89,13 @@ const PaginationButton: FC<PaginationArrowButtonProps> = ({
 }) => {
   const className = clsx(
     _className,
-    'relative inline-flex items-center justify-center w-10 h-10 border transition-colors duration-200',
+    'relative inline-flex items-center justify-center w-9 h-9 rounded-lg border transition-colors duration-200',
     isDisabled
-      ? 'opacity-40 pointer-events-none cursor-not-allowed border-[#4A3F35] text-[#9C8B7A]'
-      : 'border-[#4A3F35] text-[#9C8B7A] hover:border-[#C9A962]/50 hover:text-[#C9A962]',
+      ? 'opacity-40 pointer-events-none cursor-not-allowed border-[#E2CCB0]'
+      : 'border-[#E2CCB0] hover:border-[#C47C3A]',
   );
 
-  const style = { backgroundColor: '#251E19' };
+  const style = { backgroundColor: '#FFFFFF', color: '#9C8070' };
 
   if (isDisabled)
     return (
@@ -143,40 +144,36 @@ export const Pagination: FC<PaginationProps> = ({
   const endPage = totalPages <= 5 ? totalPages : Math.min(totalPages, currentPage + 1);
 
   return (
-    <div className="mt-20 pt-10 border-t border-[#4A3F35]">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+    <div className="mt-8 pt-6 border-t" style={{ borderColor: '#F0E6D6' }}>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 
-        {/* Entry count */}
+        {/* Count */}
         <p
           style={{
-            fontFamily: 'var(--font-label)',
-            fontSize: '0.6rem',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: '#9C8B7A',
+            fontFamily: 'var(--font-body)',
+            fontSize: '0.75rem',
+            color: '#9C8070',
           }}
         >
-          Entries{' '}
-          <span style={{ color: '#C9A962' }}>{startIndex + 1}</span>
+          Menampilkan{' '}
+          <span style={{ color: '#6B3A1F', fontWeight: 600 }}>{startIndex + 1}</span>
           {' '}–{' '}
-          <span style={{ color: '#C9A962' }}>{endIndex + 1}</span>
-          {' '}of{' '}
-          <span style={{ color: '#E8DFD4' }}>{paginationConfig.count}</span>
+          <span style={{ color: '#6B3A1F', fontWeight: 600 }}>{endIndex + 1}</span>
+          {' '}dari{' '}
+          <span style={{ color: '#3D2B1F', fontWeight: 600 }}>{paginationConfig.count}</span>
+          {' '}produk
         </p>
 
         {/* Navigation */}
-        <nav
-          className="inline-flex items-center gap-1"
-          aria-label="Catalogue pagination"
-        >
+        <nav className="inline-flex items-center gap-1.5" aria-label="Navigasi halaman">
           {/* Previous */}
           <PaginationButton
             currentPage={currentPage}
             isDisabled={currentPage === 1}
             {...getPreviousProps({ currentPage })}
           >
-            <span className="sr-only">Previous</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+            <span className="sr-only">Sebelumnya</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
             </svg>
           </PaginationButton>
@@ -184,12 +181,7 @@ export const Pagination: FC<PaginationProps> = ({
           {startPage > 2 && (
             <>
               <PaginationItem page={1} currentPage={currentPage} {...getPaginationItemProps({ page: 1 })} />
-              <span
-                className="inline-flex items-center justify-center w-8 text-sm"
-                style={{ color: '#4A3F35', fontFamily: 'var(--font-body)' }}
-              >
-                …
-              </span>
+              <span className="text-sm" style={{ color: '#C4A882' }}>…</span>
             </>
           )}
 
@@ -199,12 +191,7 @@ export const Pagination: FC<PaginationProps> = ({
 
           {endPage < totalPages - 1 && (
             <>
-              <span
-                className="inline-flex items-center justify-center w-8 text-sm"
-                style={{ color: '#4A3F35', fontFamily: 'var(--font-body)' }}
-              >
-                …
-              </span>
+              <span className="text-sm" style={{ color: '#C4A882' }}>…</span>
               <PaginationItem
                 page={totalPages}
                 currentPage={currentPage}
@@ -219,8 +206,8 @@ export const Pagination: FC<PaginationProps> = ({
             isDisabled={currentPage === totalPages}
             {...getNextProps({ currentPage })}
           >
-            <span className="sr-only">Next</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
+            <span className="sr-only">Selanjutnya</span>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </PaginationButton>

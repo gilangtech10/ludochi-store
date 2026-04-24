@@ -28,7 +28,7 @@ export const HeaderSideNav: FC<HeaderSideNavProps> = ({ open, setOpen, activeSec
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-300 bg-opacity-50 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 bg-[#3D2B1F] bg-opacity-30 backdrop-blur-sm transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -43,50 +43,64 @@ export const HeaderSideNav: FC<HeaderSideNavProps> = ({ open, setOpen, activeSec
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
-                <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                      <div className="flex items-center justify-between">
-                        <Dialog.Title className="text-lg font-bold text-gray-900">Navigation</Dialog.Title>
-                        <div className="ml-3 flex h-7 items-center">
-                          <IconButton
-                            icon={XMarkIcon}
-                            onClick={() => setOpen(false)}
-                            className="-m-2"
-                            aria-label="Close panel"
-                          />
-                        </div>
+                <Dialog.Panel className="pointer-events-auto w-screen max-w-xs">
+                  <div
+                    className="flex h-full flex-col overflow-y-scroll shadow-xl"
+                    style={{ backgroundColor: '#FFFAF4', borderLeft: '2px solid #E2CCB0' }}
+                  >
+                    <div className="flex-1 overflow-y-auto px-6 py-6">
+                      <div className="flex items-center justify-between mb-8">
+                        <Dialog.Title
+                          className="text-xl font-bold"
+                          style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
+                        >
+                          Menu
+                        </Dialog.Title>
+                        <IconButton
+                          icon={XMarkIcon}
+                          onClick={() => setOpen(false)}
+                          className="-m-2 rounded-full"
+                          aria-label="Close panel"
+                          style={{ color: '#3D2B1F' }}
+                        />
                       </div>
 
                       {!!headerNavigationItems?.length && (
-                        <div className="flex flex-grow flex-col overflow-y-auto pb-4">
-                          <div className="mt-5 flex flex-grow flex-col">
-                            <nav className="flex-1 space-y-1" aria-label="Sidebar">
-                              {headerNavigationItems.map(({ id, new_tab, ...navItemProps }) => (
-                                <URLAwareNavLink
-                                  key={id}
-                                  {...navItemProps}
-                                  newTab={new_tab}
-                                  onClick={() => setOpen(false)}
-                                  className={({ isActive }) =>
-                                    clsx(
-                                      'group flex items-center rounded-md px-4 py-3 text-sm font-normal',
-                                      isActive &&
-                                        (!navItemProps.url.includes('#') ||
-                                          activeSection === navItemProps.url.split('#')[1].split('?')[0])
-                                        ? 'bg-gray-100 text-gray-900'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                                    )
-                                  }
-                                  prefetch="viewport"
-                                >
-                                  <span className="flex-1">{navItemProps.label}</span>
-                                </URLAwareNavLink>
-                              ))}
-                            </nav>
-                          </div>
-                        </div>
+                        <nav className="flex flex-col gap-2" aria-label="Mobile navigation">
+                          {headerNavigationItems.map(({ id, new_tab, ...navItemProps }) => (
+                            <URLAwareNavLink
+                              key={id}
+                              {...navItemProps}
+                              newTab={new_tab}
+                              onClick={() => setOpen(false)}
+                              className={({ isActive }) => {
+                                const active = isActive &&
+                                  (!navItemProps.url.includes('#') ||
+                                    activeSection === navItemProps.url.split('#')[1].split('?')[0]);
+                                return clsx(
+                                  'flex items-center rounded-2xl px-5 py-3 text-base font-semibold transition-colors duration-200',
+                                  active
+                                    ? 'text-[#FFFAF4] bg-[#6B3A1F]'
+                                    : 'text-[#3D2B1F] hover:text-[#6B3A1F] hover:bg-[#E8D5B0]',
+                                );
+                              }}
+                              style={{ fontFamily: 'var(--font-body)' }}
+                              prefetch="viewport"
+                            >
+                              <span className="flex-1">{navItemProps.label}</span>
+                            </URLAwareNavLink>
+                          ))}
+                        </nav>
                       )}
+                    </div>
+
+                    <div className="px-6 pb-8">
+                      <p
+                        className="text-xs text-center"
+                        style={{ color: '#9C8070', fontFamily: 'var(--font-body)' }}
+                      >
+                        ドーナツと餅パン ✿
+                      </p>
                     </div>
                   </div>
                 </Dialog.Panel>

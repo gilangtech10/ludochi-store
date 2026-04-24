@@ -16,11 +16,11 @@ export const ProductThumbnail: FC<ProductThumbnailProps> = ({ product, className
     <figure
       className={clsx(
         'product-thumbnail',
-        'aspect-[4/3] w-full overflow-hidden',
+        'aspect-square w-full overflow-hidden relative',
         className,
       )}
       style={{
-        backgroundColor: '#1C1714',
+        backgroundColor: '#F5EDE0',
         viewTransitionName: isTransitioning ? 'product-thumbnail' : undefined,
       }}
       {...props}
@@ -31,7 +31,7 @@ export const ProductThumbnail: FC<ProductThumbnailProps> = ({ product, className
           loading="lazy"
           src={hoverImage}
           alt={product.title || ''}
-          className="h-full w-full object-cover object-center absolute inset-0 opacity-0 sepia-aged group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
+          className="h-full w-full object-cover object-center absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out"
         />
       )}
 
@@ -42,14 +42,14 @@ export const ProductThumbnail: FC<ProductThumbnailProps> = ({ product, className
           src={thumbnailImage}
           alt={product.title || ''}
           className={clsx(
-            'h-full w-full object-cover object-center sepia-aged group-hover:scale-105 transition-all duration-700 ease-out',
+            'h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out',
             { 'group-hover:opacity-0': hoverImage },
           )}
         />
       ) : (
         <div
           className="flex h-full w-full items-center justify-center"
-          style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', color: '#9C8B7A', textTransform: 'uppercase' }}
+          style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', color: '#C4A882', textTransform: 'uppercase' }}
         >
           No Image
         </div>

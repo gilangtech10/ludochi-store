@@ -1,14 +1,22 @@
-import { ButtonLink } from '@app/components/common/buttons/ButtonLink';
-import { Container } from '@app/components/common/container/Container';
 import { Image } from '@app/components/common/images/Image';
 import { formatPhoneNumber } from '@libs/util/phoneNumber';
 import { formatPrice } from '@libs/util/prices';
 import { retrieveOrder } from '@libs/util/server/data/orders.server';
-import { StoreOrder, StorePaymentCollection } from '@medusajs/types';
+import { StoreOrder } from '@medusajs/types';
 import { LoaderFunctionArgs, redirect } from 'react-router';
 import { Link, useLoaderData } from 'react-router';
+import { motion, Variants } from 'framer-motion';
+import { CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 
-const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } },
+};
+
+const stagger: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+};
 
 export const loader = async ({ request }: LoaderFunctionArgs): Promise<{ order: StoreOrder }> => {
   const url = new URL(request.url);
@@ -17,33 +25,6 @@ export const loader = async ({ request }: LoaderFunctionArgs): Promise<{ order: 
   const order = await retrieveOrder(request, orderId);
   return { order };
 };
-
-const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <dt
-    style={{
-      fontFamily: 'var(--font-label)',
-      fontSize: '0.6rem',
-      letterSpacing: '0.25em',
-      textTransform: 'uppercase',
-      color: '#C9A962',
-    }}
-  >
-    {children}
-  </dt>
-);
-
-const SectionValue: React.FC<{ children: React.ReactNode; large?: boolean }> = ({ children, large }) => (
-  <dd
-    style={{
-      fontFamily: 'var(--font-display)',
-      fontWeight: 400,
-      fontSize: large ? '1.4rem' : '1.15rem',
-      color: large ? '#C9A962' : '#E8DFD4',
-    }}
-  >
-    {children}
-  </dd>
-);
 
 export default function CheckoutSuccessRoute() {
   const { order } = useLoaderData<typeof loader>();
@@ -56,206 +37,253 @@ export default function CheckoutSuccessRoute() {
   } = order as StoreOrder;
 
   return (
-    <section
-      className="min-h-screen relative selection:bg-[#C9A962] selection:text-[#1C1714]"
-      style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
-    >
-      {/* Atmospheric overlays */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
-        style={{ backgroundImage: PAPER_TEXTURE, opacity: 0.03 }}
-      />
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 vignette-overlay" />
+    <div className="w-full min-h-screen" style={{ backgroundColor: '#FFFAF4', color: '#3D2B1F' }}>
+      <motion.div
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+        className="max-w-2xl mx-auto px-5 pt-8 pb-20"
+      >
 
-      <Container className="!max-w-3xl relative z-10 py-16 md:py-24">
-
-        {/* ── Confirmation header ── */}
-        <div
-          className="p-8 sm:p-12 lg:p-16 relative"
-          style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
+        {/* ── Success header ── */}
+        <motion.div
+          variants={fadeUp}
+          className="relative overflow-hidden rounded-2xl px-5 pt-6 pb-5 mb-6"
+          style={{ background: 'linear-gradient(150deg, #3D2B1F 0%, #6B3A1F 100%)' }}
         >
-          {/* Corner ornaments */}
-          {['top-2 left-2', 'top-2 right-2', 'bottom-2 left-2', 'bottom-2 right-2'].map((pos) => (
-            <span key={pos} className={`absolute ${pos} text-[#C9A962] text-xs opacity-40 pointer-events-none`} aria-hidden="true">✦</span>
-          ))}
-
-          {/* Badge */}
-          <div className="academia-label mb-6">Order Received</div>
-
-          <h1
-            className="text-5xl md:text-6xl mb-4"
-            style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-          >
-            Thank You
-          </h1>
-
-          <p
-            className="italic leading-relaxed max-w-md mb-2"
-            style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)' }}
-          >
-            Your order has been received and is now being curated with care.
-            We shall dispatch it presently.
-          </p>
-
-          {/* Order number */}
-          <p
-            className="mt-4"
-            style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#9C8B7A' }}
-          >
-            Reference&nbsp;·&nbsp;{order.id}
-          </p>
-
-          {/* ── Order items ── */}
-          <ul
-            role="list"
-            className="mt-10"
-            style={{ borderTop: '1px solid #4A3F35' }}
-          >
-            {order.items?.map((item) => (
-              <li
-                key={item.id}
-                className="flex space-x-6 py-6"
-                style={{ borderBottom: '1px solid rgba(74,63,53,0.5)' }}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: '#E8D5B0' }}
+          />
+          <div className="flex items-start gap-4">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ backgroundColor: 'rgba(232,213,176,0.15)', border: '1px solid rgba(232,213,176,0.25)' }}
+            >
+              <CheckCircleIcon className="w-5 h-5" style={{ color: '#E8D5B0' }} />
+            </div>
+            <div>
+              <p
+                className="text-[9px] tracking-[0.3em] uppercase mb-1"
+                style={{ color: 'rgba(232,213,176,0.55)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
               >
+                ご注文ありがとうございます
+              </p>
+              <h1
+                className="text-xl leading-snug"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
+              >
+                Pesanan Diterima!
+              </h1>
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: 'rgba(255,250,244,0.5)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+              >
+                Pesanan kamu sedang kami proses
+              </p>
+            </div>
+          </div>
+          <div
+            className="mt-4 px-3 py-2 rounded-xl inline-flex items-center gap-1.5"
+            style={{ backgroundColor: 'rgba(255,250,244,0.08)', border: '1px solid rgba(255,250,244,0.12)' }}
+          >
+            <span
+              className="text-[9px] tracking-[0.15em] uppercase"
+              style={{ color: 'rgba(232,213,176,0.55)', fontFamily: 'var(--font-label)' }}
+            >
+              No. Pesanan
+            </span>
+            <span
+              className="text-[11px] font-semibold truncate max-w-[200px]"
+              style={{ color: '#E8D5B0', fontFamily: 'var(--font-body)' }}
+            >
+              {order.id}
+            </span>
+          </div>
+        </motion.div>
+
+        {/* ── Order items ── */}
+        <motion.div
+          variants={fadeUp}
+          className="rounded-2xl overflow-hidden mb-4"
+          style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #F0E6D6' }}
+        >
+          <div className="px-4 py-3 border-b" style={{ borderColor: '#F0E6D6' }}>
+            <p
+              className="text-[10px] tracking-[0.2em] uppercase"
+              style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+            >
+              Item Pesanan
+            </p>
+          </div>
+          <ul className="divide-y" style={{ borderColor: '#F0E6D6' }}>
+            {order.items?.map((item) => (
+              <li key={item.id} className="flex items-center gap-3 px-4 py-3">
                 {item.thumbnail && (
-                  <Image
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="h-24 w-24 flex-none object-cover object-center sepia-aged"
-                    style={{ border: '1px solid #4A3F35' }}
-                  />
+                  <div
+                    className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0"
+                    style={{ backgroundColor: '#FFF3E4', border: '1.5px solid #F0E6D6' }}
+                  >
+                    <Image
+                      src={item.thumbnail}
+                      alt={item.title}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
                 )}
-                <div className="flex flex-auto flex-col space-y-1 justify-center">
-                  <div>
-                    <h3
-                      className="leading-tight"
-                      style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.15rem', color: '#E8DFD4' }}
-                    >
-                      <Link
-                        to={`/products/${item.product_handle}`}
-                        className="transition-colors"
-                        style={{ color: 'inherit' }}
-                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#C9A962')}
-                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#E8DFD4')}
-                      >
-                        {item.product_title}
-                      </Link>
-                    </h3>
-                    <p
-                      className="mt-1 italic text-sm"
-                      style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
-                    >
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-sm leading-snug line-clamp-1"
+                    style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+                  >
+                    {item.product_title}
+                  </p>
+                  {item.variant_title && (
+                    <p className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
                       {item.variant_title}
                     </p>
-                  </div>
-                  <div className="flex items-end mt-2">
-                    <span className="academia-label">Qty {item.quantity}</span>
-                  </div>
+                  )}
+                  <p
+                    className="text-xs font-semibold mt-0.5"
+                    style={{ color: '#6B3A1F', fontFamily: 'var(--font-label)' }}
+                  >
+                    ×{item.quantity}
+                  </p>
                 </div>
-                <p className="flex-none flex items-center" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.2rem', color: '#C9A962' }}>
+                <p
+                  className="text-sm font-medium flex-shrink-0"
+                  style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#C47C3A' }}
+                >
                   {formatPrice(item.unit_price, { currency: order.currency_code })}
                 </p>
               </li>
             ))}
           </ul>
+        </motion.div>
 
-          {/* ── Totals ── */}
-          <dl className="flex flex-col gap-4 pt-6 mt-2" style={{ borderTop: '1px solid #4A3F35' }}>
-            <div className="flex justify-between items-end">
-              <SectionLabel>Subtotal</SectionLabel>
-              <SectionValue>{formatPrice(order.item_subtotal, { currency: order.currency_code })}</SectionValue>
+        {/* ── Totals ── */}
+        <motion.div
+          variants={fadeUp}
+          className="rounded-2xl overflow-hidden mb-4"
+          style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #F0E6D6' }}
+        >
+          <div className="px-4 py-3 border-b" style={{ borderColor: '#F0E6D6' }}>
+            <p
+              className="text-[10px] tracking-[0.2em] uppercase"
+              style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+            >
+              Rincian Biaya
+            </p>
+          </div>
+          <div className="px-4 py-4 space-y-2.5">
+            <div className="flex justify-between items-center">
+              <span className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Subtotal</span>
+              <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}>
+                {formatPrice(order.item_subtotal, { currency: order.currency_code })}
+              </span>
             </div>
             {discountTotal > 0 && (
-              <div className="flex justify-between items-end">
-                <SectionLabel>Discount</SectionLabel>
-                <SectionValue>{formatPrice(-discountTotal, { currency: order.currency_code })}</SectionValue>
+              <div className="flex justify-between items-center">
+                <span className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Diskon</span>
+                <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#6B3A1F' }}>
+                  -{formatPrice(discountTotal, { currency: order.currency_code })}
+                </span>
               </div>
             )}
-            <div className="flex justify-between items-end">
-              <SectionLabel>Shipping</SectionLabel>
-              <SectionValue>{formatPrice(order.shipping_total, { currency: order.currency_code })}</SectionValue>
+            <div className="flex justify-between items-center">
+              <span className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Ongkos Kirim</span>
+              <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}>
+                {formatPrice(order.shipping_total, { currency: order.currency_code })}
+              </span>
             </div>
-            <div className="flex justify-between items-end">
-              <SectionLabel>Tax</SectionLabel>
-              <SectionValue>{formatPrice(order.tax_total, { currency: order.currency_code })}</SectionValue>
+            <div className="flex justify-between items-center">
+              <span className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Pajak</span>
+              <span className="text-sm font-medium" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}>
+                {formatPrice(order.tax_total, { currency: order.currency_code })}
+              </span>
             </div>
-            <div className="flex items-end justify-between pt-6" style={{ borderTop: '1px solid #4A3F35' }}>
-              <SectionLabel>Order Total</SectionLabel>
-              <SectionValue large>{formatPrice(order.total, { currency: order.currency_code })}</SectionValue>
-            </div>
-          </dl>
-
-          {/* ── Addresses ── */}
-          <dl className="mt-12 grid grid-cols-2 gap-x-4 pt-12" style={{ borderTop: '1px solid #4A3F35' }}>
-            {!!shippingAddress && (
-              <div>
-                <dt className="academia-label mb-3 block">Shipping Address</dt>
-                <dd className="mt-2">
-                  <address className="not-italic leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)', fontSize: '0.9rem' }}>
-                    <span className="block font-bold" style={{ color: '#E8DFD4' }}>{shippingAddress.first_name} {shippingAddress.last_name}</span>
-                    <span className="block">{shippingAddress.address_1}</span>
-                    {shippingAddress.address_2 && <span className="block">{shippingAddress.address_2}</span>}
-                    <span className="block">{shippingAddress.city}, {shippingAddress.province} {shippingAddress.postal_code}</span>
-                    <span className="block uppercase">{shippingAddress.country_code}</span>
-                    {shippingAddress.phone && <span className="block" style={{ color: '#C9A962' }}>{formatPhoneNumber(shippingAddress.phone)}</span>}
-                  </address>
-                </dd>
-              </div>
-            )}
-            {!!billingAddress && (
-              <div>
-                <dt className="academia-label mb-3 block">Billing Address</dt>
-                <dd className="mt-2">
-                  <address className="not-italic leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)', fontSize: '0.9rem' }}>
-                    <span className="block font-bold" style={{ color: '#E8DFD4' }}>{billingAddress.first_name} {billingAddress.last_name}</span>
-                    <span className="block">{billingAddress.address_1}</span>
-                    {billingAddress.address_2 && <span className="block">{billingAddress.address_2}</span>}
-                    <span className="block">{billingAddress.city}, {billingAddress.province} {billingAddress.postal_code}</span>
-                    <span className="block uppercase">{billingAddress.country_code}</span>
-                    {billingAddress.phone && <span className="block">{formatPhoneNumber(billingAddress.phone)}</span>}
-                  </address>
-                </dd>
-              </div>
-            )}
-          </dl>
-
-          {/* ── Shipping method ── */}
-          <dl className="mt-12 grid grid-cols-2 gap-x-4 pt-12" style={{ borderTop: '1px solid #4A3F35' }}>
-            <div>
-              <dt className="academia-label mb-3 block">Delivery Method</dt>
-              {shippingMethods?.map((sm) => (
-                <dd
-                  key={sm.id}
-                  className="mt-2 leading-relaxed"
-                  style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.7)' }}
-                >
-                  {sm.name}
-                </dd>
-              ))}
-            </div>
-          </dl>
-
-          {/* ── CTA ── */}
-          <div className="mt-16 pt-10 text-center flex flex-col sm:flex-row items-center justify-center gap-4" style={{ borderTop: '1px solid #4A3F35' }}>
-            <Link
-              to={`/orders/${order.id}/reviews`}
-              className="btn-brass engraved !h-12 w-full sm:w-auto !px-12 !text-base cursor-pointer inline-flex items-center justify-center"
-              style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem' }}
+            <div
+              className="flex justify-between items-center pt-3 mt-1 border-t"
+              style={{ borderColor: '#F0E6D6' }}
             >
-              ✦ Write a Review
-            </Link>
-            <ButtonLink
-              as={(buttonProps) => <Link to="/products" {...buttonProps} />}
-              className="!h-12 w-full sm:w-auto !px-12 !text-base cursor-pointer inline-flex items-center justify-center"
-              style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem', color: '#9C8B7A', border: '1px solid #4A3F35', backgroundColor: 'transparent' }}
-            >
-              Continue Browsing <span aria-hidden="true" className="ml-2">→</span>
-            </ButtonLink>
+              <span
+                className="text-[10px] tracking-[0.2em] uppercase"
+                style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+              >
+                Total
+              </span>
+              <span
+                className="text-xl"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+              >
+                {formatPrice(order.total, { currency: order.currency_code })}
+              </span>
+            </div>
           </div>
+        </motion.div>
 
-        </div>
-      </Container>
-    </section>
+        {/* ── Shipping info ── */}
+        {(!!shippingAddress || !!shippingMethods?.length) && (
+          <motion.div
+            variants={fadeUp}
+            className="rounded-2xl overflow-hidden mb-6"
+            style={{ backgroundColor: '#FFFFFF', border: '1.5px solid #F0E6D6' }}
+          >
+            <div className="px-4 py-3 border-b" style={{ borderColor: '#F0E6D6' }}>
+              <p
+                className="text-[10px] tracking-[0.2em] uppercase"
+                style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+              >
+                Info Pengiriman
+              </p>
+            </div>
+            <div className="px-4 py-4 space-y-3">
+              {!!shippingAddress && (
+                <div>
+                  <p className="text-xs mb-1" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Alamat</p>
+                  <address className="not-italic text-sm leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: '#3D2B1F' }}>
+                    <span className="font-semibold">{shippingAddress.first_name} {shippingAddress.last_name}</span><br />
+                    {shippingAddress.address_1}{shippingAddress.address_2 && `, ${shippingAddress.address_2}`}<br />
+                    {shippingAddress.city}, {shippingAddress.province} {shippingAddress.postal_code}<br />
+                    <span className="uppercase">{shippingAddress.country_code}</span>
+                    {shippingAddress.phone && (
+                      <><br /><span style={{ color: '#C47C3A' }}>{formatPhoneNumber(shippingAddress.phone)}</span></>
+                    )}
+                  </address>
+                </div>
+              )}
+              {!!shippingMethods?.length && (
+                <div>
+                  <p className="text-xs mb-1" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>Metode Pengiriman</p>
+                  {shippingMethods.map((sm) => (
+                    <p key={sm.id} className="text-sm" style={{ fontFamily: 'var(--font-body)', color: '#3D2B1F' }}>
+                      {sm.name}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── CTA ── */}
+        <motion.div variants={fadeUp}>
+          <Link
+            to="/products"
+            className="w-full py-3.5 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98]"
+            style={{
+              backgroundColor: '#3D2B1F',
+              color: '#FFFAF4',
+              fontFamily: 'var(--font-label)',
+              boxShadow: '0 4px 14px rgba(61,43,31,0.2)',
+            }}
+          >
+            Pesan Lagi <ArrowRightIcon className="w-4 h-4" />
+          </Link>
+        </motion.div>
+
+      </motion.div>
+    </div>
   );
 }

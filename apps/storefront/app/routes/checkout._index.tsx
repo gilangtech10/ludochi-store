@@ -1,12 +1,11 @@
 import { CheckoutFlow } from '@app/components/checkout/CheckoutFlow';
 import { CheckoutSidebar } from '@app/components/checkout/CheckoutSidebar';
-import { Empty } from '@app/components/common/Empty/Empty';
-import { Button } from '@app/components/common/buttons/Button';
 import { CheckoutProvider } from '@app/providers/checkout-provider';
 import ShoppingCartIcon from '@heroicons/react/24/outline/ShoppingCartIcon';
 import { sdk } from '@libs/util/server/client.server';
 import { getCartId, removeCartId } from '@libs/util/server/cookies.server';
 import { initiatePaymentSession, retrieveCart, setShippingMethod } from '@libs/util/server/data/cart.server';
+import { getCustomer } from '@libs/util/server/data/customer.server';
 import { listCartPaymentProviders } from '@libs/util/server/data/payment.server';
 import { CartDTO, StoreCart, StoreCartShippingOption, StorePaymentProvider } from '@medusajs/types';
 import { BasePaymentSession } from '@medusajs/types/dist/http/payment/common';
@@ -78,6 +77,9 @@ export const loader = async ({
   paymentProviders: StorePaymentProvider[];
   activePaymentSession: BasePaymentSession | null;
 }> => {
+  const customer = await getCustomer(request);
+  if (!customer) throw redirect('/account/login?redirectTo=/checkout');
+
   const cartId = await getCartId(request.headers);
 
   if (!cartId) {
@@ -125,16 +127,30 @@ export default function CheckoutIndexRoute() {
 
   if (!cart || !cart.items?.length)
     return (
-      <Empty
-        icon={ShoppingCartIcon}
-        title="Your cart is empty."
-        description="Add items to your cart to proceed"
-        action={
-          <Button variant="primary" as={(buttonProps) => <Link to="/products" {...buttonProps} />} className="btn-brass engraved">
-            Browse the Catalogue
-          </Button>
-        }
-      />
+      <div className="min-h-screen flex flex-col items-center justify-center px-5 py-16" style={{ backgroundColor: '#FFFAF4' }}>
+        <div
+          className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
+          style={{ backgroundColor: '#FFF3E4' }}
+        >
+          <ShoppingCartIcon className="w-7 h-7" style={{ color: '#C4A882' }} />
+        </div>
+        <p
+          className="text-lg mb-1 text-center"
+          style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+        >
+          Keranjang masih kosong
+        </p>
+        <p className="text-sm mb-6 text-center" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
+          Tambahkan produk terlebih dahulu
+        </p>
+        <Link
+          to="/products"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold"
+          style={{ backgroundColor: '#3D2B1F', color: '#FFFAF4', fontFamily: 'var(--font-label)' }}
+        >
+          Lihat Menu
+        </Link>
+      </div>
     );
 
   return (
@@ -147,30 +163,42 @@ export default function CheckoutIndexRoute() {
       }}
     >
       <section
-        className="min-h-screen relative selection:bg-[#C9A962] selection:text-[#1C1714]"
-        style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
+        className="min-h-screen relative selection:bg-[#E8D5B0] selection:text-[#3D2B1F]"
+        style={{ backgroundColor: '#FFFAF4', color: '#3D2B1F' }}
       >
-        {/* Atmospheric overlays */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, opacity: 0.03 }}
-        />
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 vignette-overlay" />
+        <div className="mx-auto max-w-2xl px-4 pb-10 pt-4 sm:px-6 sm:pb-16 sm:pt-8 lg:max-w-7xl lg:px-8 lg:pb-24 lg:pt-12 relative">
 
-        <div className="mx-auto max-w-2xl px-4 pb-8 pt-6 sm:px-6 sm:pb-16 sm:pt-8 lg:max-w-7xl lg:px-8 lg:pb-24 lg:pt-16 relative z-10">
-          {/* Checkout page header */}
-          <div className="text-center mb-12 pt-8">
-            <div className="academia-label-row mb-4 max-w-[8rem] mx-auto">Finalise your order</div>
-            <h1
-              className="text-4xl md:text-5xl"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
+          {/* ── Checkout header ── */}
+          <div
+            className="relative overflow-hidden rounded-2xl px-5 pt-6 pb-5 mb-7"
+            style={{ background: 'linear-gradient(150deg, #3D2B1F 0%, #6B3A1F 100%)' }}
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10"
+              style={{ backgroundColor: '#E8D5B0' }}
+            />
+            <p
+              className="text-[9px] tracking-[0.3em] uppercase mb-1"
+              style={{ color: 'rgba(232,213,176,0.55)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
             >
-              The <em style={{ color: '#C9A962' }}>Checkout</em>
+              チェックアウト
+            </p>
+            <h1
+              className="text-xl sm:text-2xl"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
+            >
+              Selesaikan Pesanan
             </h1>
+            <p
+              className="text-xs mt-0.5"
+              style={{ color: 'rgba(255,250,244,0.5)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+            >
+              Isi data pengiriman &amp; pembayaran
+            </p>
           </div>
 
-          <div className="lg:grid lg:grid-cols-[4fr_3fr] lg:gap-x-12 xl:gap-x-16">
+          <div className="lg:grid lg:grid-cols-[4fr_3fr] lg:gap-x-10 xl:gap-x-14">
             <CheckoutFlow />
             <CheckoutSidebar />
           </div>

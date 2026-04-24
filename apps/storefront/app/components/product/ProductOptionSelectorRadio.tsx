@@ -1,5 +1,4 @@
 import { Label, Radio, RadioGroup } from '@headlessui/react';
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { formatPrice } from '@libs/util/prices';
 import clsx from 'clsx';
 import type { FC } from 'react';
@@ -28,106 +27,82 @@ export const ProductOptionSelectorRadio: FC<ProductOptionSelectorProps> = ({
   value,
   currencyCode,
 }) => {
-  const handleChange = (name: string, value: string) => {
-    if (onChange) onChange(name, value);
-  };
-
-  // Filter unique values
   const uniqueValues = option.values.filter(
-    (optionValue, index, self) => self.findIndex((item) => item.value === optionValue.value) === index,
+    (v, i, arr) => arr.findIndex((x) => x.value === v.value) === i,
   );
 
-  // Sort values by price (low to high)
   const sortedValues = [...uniqueValues].sort((a, b) => {
-    const aPrice = a.minPrice || a.exactPrice || 0;
-    const bPrice = b.minPrice || b.exactPrice || 0;
-    return aPrice - bPrice;
+    const aP = a.minPrice ?? a.exactPrice ?? 0;
+    const bP = b.minPrice ?? b.exactPrice ?? 0;
+    return aP - bP;
   });
 
   return (
     <RadioGroup
       name={`options.${option.id}`}
       value={value}
-      onChange={(changedValue) => handleChange(option.id, changedValue)}
+      onChange={(val) => onChange?.(option.id, val)}
     >
-      <div className="grid grid-cols-1 gap-2">
-        {sortedValues.map((optionValue, valueIndex) => {
-          // Format the price display
-          let priceDisplay = '';
-          let discountDisplay = '';
-
-          if (optionValue.minPrice !== undefined && optionValue.maxPrice !== undefined) {
-            if (optionValue.minPrice === optionValue.maxPrice) {
-              // Single price
-              priceDisplay = formatPrice(optionValue.minPrice, { currency: currencyCode });
-            } else {
-              // Price range
-              priceDisplay = `${formatPrice(optionValue.minPrice, { currency: currencyCode })} – ${formatPrice(optionValue.maxPrice, { currency: currencyCode })}`;
-            }
-          } else if (optionValue.exactPrice !== undefined) {
-            // Exact price
-            priceDisplay = formatPrice(optionValue.exactPrice, { currency: currencyCode });
-
-            // Format discount if available
-            if (optionValue.discountPercentage) {
-              discountDisplay = `${optionValue.discountPercentage}% off`;
-            }
+      <div className="flex flex-wrap gap-2">
+        {sortedValues.map((optVal, i) => {
+          let sub = '';
+          if (optVal.minPrice !== undefined && optVal.maxPrice !== undefined) {
+            sub = optVal.minPrice === optVal.maxPrice
+              ? formatPrice(optVal.minPrice, { currency: currencyCode })
+              : `${formatPrice(optVal.minPrice, { currency: currencyCode })}+`;
+          } else if (optVal.exactPrice !== undefined) {
+            sub = formatPrice(optVal.exactPrice, { currency: currencyCode });
           }
 
           return (
             <Radio
-              key={valueIndex}
-              value={optionValue.value}
-              disabled={optionValue.disabled}
-              className={({ checked, disabled }) =>
-                clsx(
-                  'group',
-                  checked
-                    ? 'border-[#C9A962] ring-1 ring-[#C9A962]/50'
-                    : 'border-[#4A3F35] hover:border-[#C9A962]/50',
-                  'relative col-span-1 flex h-full cursor-pointer flex-col justify-between border px-4 py-3 shadow-none transition-colors duration-200 focus:outline-none',
-                  disabled ? 'opacity-40 cursor-not-allowed' : '',
-                )
-              }
-              style={{ backgroundColor: '#251E19' }}
+              key={i}
+              value={optVal.value}
+              disabled={optVal.disabled}
             >
-              {({ checked }) => (
-                <Label as="div" className="flex items-center w-full cursor-pointer">
-                  {/* Option value on the left */}
-                  <div className="flex-grow">
+              {({ checked, disabled }) => (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  className={clsx(
+                    'flex flex-col items-start px-4 py-2.5 rounded-2xl transition-all duration-200 active:scale-95 text-left',
+                    disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
+                  )}
+                  style={{
+                    backgroundColor: checked ? '#3D2B1F' : '#FFFAF4',
+                    border: checked ? '1.5px solid #3D2B1F' : '1.5px solid #E2CCB0',
+                    boxShadow: checked ? '0 2px 10px rgba(61,43,31,0.2)' : 'none',
+                  }}
+                >
+                  <span
+                    className="text-sm font-semibold leading-tight"
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontWeight: 600,
+                      color: checked ? '#FFFAF4' : '#3D2B1F',
+                    }}
+                  >
+                    {optVal.value}
+                    {optVal.disabled && (
+                      <span className="ml-1.5 text-[10px] font-normal" style={{ color: checked ? 'rgba(255,250,244,0.5)' : '#C4A882' }}>
+                        habis
+                      </span>
+                    )}
+                  </span>
+                  {sub && (
                     <span
-                      className="text-base"
-                      style={{ fontFamily: 'var(--font-display)', color: checked ? '#C9A962' : '#E8DFD4' }}
+                      className="text-[11px] mt-0.5"
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontWeight: 300,
+                        color: checked ? 'rgba(255,250,244,0.65)' : '#C47C3A',
+                      }}
                     >
-                      {optionValue.value}
+                      {sub}
+                      {optVal.discountPercentage ? ` · ${optVal.discountPercentage}% off` : ''}
                     </span>
-                    {optionValue.disabled && (
-                      <span className="text-xs italic ml-2" style={{ color: '#9C8B7A' }}>(sold out)</span>
-                    )}
-                  </div>
-
-                  {/* Price + check icon on the right */}
-                  <div className="flex items-center">
-                    {priceDisplay && (
-                      <div className="text-right">
-                        <span className="text-sm italic" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
-                          {priceDisplay}
-                        </span>
-                        {discountDisplay && (
-                          <span
-                            className="ml-1 text-xs"
-                            style={{ fontFamily: 'var(--font-label)', color: '#C9A962' }}
-                          >
-                            ({discountDisplay})
-                          </span>
-                        )}
-                      </div>
-                    )}
-                    {checked && (
-                      <CheckCircleIcon className="h-5 w-5 ml-3" style={{ color: '#C9A962' }} aria-hidden="true" />
-                    )}
-                  </div>
-                </Label>
+                  )}
+                </button>
               )}
             </Radio>
           );

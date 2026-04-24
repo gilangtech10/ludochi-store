@@ -1,9 +1,3 @@
-import { Breadcrumb, Breadcrumbs } from '@app/components/common/breadcrumbs/Breadcrumbs';
-import { Button } from '@app/components/common/buttons/Button';
-import { Container } from '@app/components/common/container/Container';
-import { FieldLabel } from '@app/components/common/forms/fields/FieldLabel';
-import { Grid } from '@app/components/common/grid/Grid';
-import { GridColumn } from '@app/components/common/grid/GridColumn';
 import { SubmitButton } from '@app/components/common/remix-hook-form/buttons/SubmitButton';
 import { QuantitySelector } from '@app/components/common/remix-hook-form/field-groups/QuantitySelector';
 import { ProductImageGallery } from '@app/components/product/ProductImageGallery';
@@ -11,14 +5,12 @@ import { ProductOptionSelectorRadio } from '@app/components/product/ProductOptio
 import { ProductOptionSelectorSelect } from '@app/components/product/ProductOptionSelectorSelect';
 import { ProductPrice } from '@app/components/product/ProductPrice';
 import { ProductPriceRange } from '@app/components/product/ProductPriceRange';
-import { ProductReviewStars } from '@app/components/reviews/ProductReviewStars';
 import { Share } from '@app/components/share';
 import { useCart } from '@app/hooks/useCart';
 import { useProductInventory } from '@app/hooks/useProductInventory';
 import { useRegion } from '@app/hooks/useRegion';
 import { createLineItemSchema } from '@app/routes/api.cart.line-items.create';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { StoreProductReviewStats } from '@lambdacurry/medusa-plugins-sdk';
 import { FetcherKeys } from '@libs/util/fetcher-keys';
 import {
   getFilteredOptionValues,
@@ -28,87 +20,52 @@ import {
 } from '@libs/util/products';
 import { StoreProduct, StoreProductOptionValue, StoreProductVariant } from '@medusajs/types';
 import truncate from 'lodash/truncate';
-import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
 import { motion, Variants } from 'framer-motion';
+import { ArrowLeftIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 
-const fadeUpVariant: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+const fadeUp: Variants = {
+  hidden:  { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
 };
 
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
-
-const getBreadcrumbs = (product: StoreProduct) => {
-  const breadcrumbs: Breadcrumb[] = [
-    { label: 'Home', url: '/' },
-    { label: 'The Catalogue', url: '/products' },
-  ];
-
-  if (product.collection) {
-    breadcrumbs.push({
-      label: product.collection.title,
-      url: `/collections/${product.collection.handle}`,
-    });
-  }
-
-  return breadcrumbs;
+const stagger: Variants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.06 } },
 };
 
 export interface ProductTemplateProps {
   product: StoreProduct;
-  reviewsCount: number;
-  reviewStats?: StoreProductReviewStats;
 }
 
-const variantIsSoldOut: (variant: StoreProductVariant | undefined) => boolean = (variant) => {
-  return !!(variant?.manage_inventory && variant?.inventory_quantity! < 1);
-};
+const variantIsSoldOut = (v: StoreProductVariant | undefined) =>
+  !!(v?.manage_inventory && v?.inventory_quantity! < 1);
 
-// Paper texture (matches global)
-const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
-
-export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductTemplateProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
+export const ProductTemplate = ({ product }: ProductTemplateProps) => {
+  const formRef       = useRef<HTMLFormElement>(null);
   const addToCartFetcher = useFetcher<any>({ key: FetcherKeys.cart.createLineItem });
   const { toggleCartDrawer } = useCart();
-  const { region } = useRegion();
-  const hasErrors = Object.keys(addToCartFetcher.data?.errors || {}).length > 0;
+  const { region }    = useRegion();
+  const hasErrors     = Object.keys(addToCartFetcher.data?.errors || {}).length > 0;
   const isAddingToCart = ['submitting', 'loading'].includes(addToCartFetcher.state);
 
   const defaultValues = {
     productId: product.id!,
-    quantity: '1',
+    quantity:  '1',
     options: useMemo(() => {
-      const firstVariant = product.variants?.[0];
-      if (firstVariant && firstVariant.options) {
-        return firstVariant.options.reduce(
-          (acc, option) => {
-            if (option.option_id && option.value) acc[option.option_id] = option.value;
-            return acc;
-          },
-          {} as Record<string, string>,
-        );
+      const first = product.variants?.[0];
+      if (first?.options) {
+        return first.options.reduce((acc, o) => {
+          if (o.option_id && o.value) acc[o.option_id] = o.value;
+          return acc;
+        }, {} as Record<string, string>);
       }
-      return (
-        product.options?.reduce(
-          (acc, option) => {
-            if (!option.id || !option.values?.length) return acc;
-            acc[option.id] = option.values[0].value;
-            return acc;
-          },
-          {} as Record<string, string>,
-        ) || {}
-      );
+      return product.options?.reduce((acc, o) => {
+        if (o.id && o.values?.length) acc[o.id] = o.values[0].value;
+        return acc;
+      }, {} as Record<string, string>) || {};
     }, [product]),
   };
 
@@ -123,14 +80,13 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
     },
   });
 
-  const breadcrumbs = getBreadcrumbs(product);
   const currencyCode = region.currency_code;
-  const [controlledOptions, setControlledOptions] = useState<Record<string, string>>(defaultValues.options);
-  const selectedOptions = useMemo(
-    () => product.options?.map(({ id }) => controlledOptions[id]),
-    [product, controlledOptions],
-  );
+  const [opts, setOpts] = useState<Record<string, string>>(defaultValues.options);
 
+  const selectedOptions = useMemo(
+    () => product.options?.map(({ id }) => opts[id]),
+    [product, opts],
+  );
   const variantMatrix = useMemo(() => selectVariantMatrix(product), [product]);
   const selectedVariant = useMemo(
     () => selectVariantFromMatrixBySelectedOptions(variantMatrix, selectedOptions),
@@ -138,382 +94,384 @@ export const ProductTemplate = ({ product, reviewsCount, reviewStats }: ProductT
   );
 
   const productSelectOptions = useMemo(
-    () =>
-      product.options?.map((option, index) => {
-        if (index === 0) {
-          const optionValuesWithPrices = getOptionValuesWithDiscountLabels(
-            index, currencyCode, option.values || [], variantMatrix, selectedOptions,
-          );
-          return { title: option.title, product_id: option.product_id as string, id: option.id, values: optionValuesWithPrices };
-        }
-        const filteredOptionValues = getFilteredOptionValues(product, controlledOptions, option.id);
-        const availableOptionValues = option.values?.filter((optionValue) =>
-          filteredOptionValues.some((filteredValue) => filteredValue.value === optionValue.value),
-        ) as StoreProductOptionValue[];
-        const optionValuesWithPrices = getOptionValuesWithDiscountLabels(
-          index, currencyCode, availableOptionValues || [], variantMatrix, selectedOptions,
-        );
-        return { title: option.title, product_id: option.product_id as string, id: option.id, values: optionValuesWithPrices };
-      }),
-    [product, controlledOptions, currencyCode, variantMatrix, selectedOptions],
+    () => product.options?.map((option, idx) => {
+      if (idx === 0) {
+        const vals = getOptionValuesWithDiscountLabels(idx, currencyCode, option.values || [], variantMatrix, selectedOptions);
+        return { title: option.title, product_id: option.product_id as string, id: option.id, values: vals };
+      }
+      const filtered  = getFilteredOptionValues(product, opts, option.id);
+      const available = (option.values?.filter((v) =>
+        filtered.some((f) => f.value === v.value),
+      ) || []) as StoreProductOptionValue[];
+      const vals = getOptionValuesWithDiscountLabels(idx, currencyCode, available, variantMatrix, selectedOptions);
+      return { title: option.title, product_id: option.product_id as string, id: option.id, values: vals };
+    }),
+    [product, opts, currencyCode, variantMatrix, selectedOptions],
   );
 
   const productSoldOut = useProductInventory(product).averageInventory === 0;
+  const soldOut        = variantIsSoldOut(selectedVariant) || productSoldOut;
+  const hasOptions     = !!productSelectOptions?.length;
 
-  const updateControlledOptions = (
-    currentOptions: Record<string, string>,
-    changedOptionId: string,
-    newValue: string,
-  ): Record<string, string> => {
-    const newOptions = { ...currentOptions };
-    newOptions[changedOptionId] = newValue;
-    const allOptionIds = product.options?.map((option) => option.id) || [];
-    const changedOptionIndex = allOptionIds.indexOf(changedOptionId);
-    const subsequentOptionIds = changedOptionIndex >= 0 ? allOptionIds.slice(changedOptionIndex + 1) : [];
-    if (subsequentOptionIds.length > 0) {
-      subsequentOptionIds.forEach((optionId) => {
-        if (!optionId) return;
-        const filteredValues = getFilteredOptionValues(product, newOptions, optionId);
-        newOptions[optionId] = filteredValues.length > 0 ? filteredValues[0].value : '';
+  const updateOpts = (current: Record<string, string>, changedId: string, val: string) => {
+    const next = { ...current, [changedId]: val };
+    const ids  = product.options?.map((o) => o.id) || [];
+    const idx  = ids.indexOf(changedId);
+    if (idx >= 0) {
+      ids.slice(idx + 1).forEach((id) => {
+        if (!id) return;
+        const f = getFilteredOptionValues(product, next, id);
+        next[id] = f[0]?.value ?? '';
       });
     }
-    return newOptions;
+    return next;
   };
 
-  const handleOptionChangeBySelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const changedOptionId = e.target.name.replace('options.', '');
-    const newOptions = updateControlledOptions(controlledOptions, changedOptionId, e.target.value);
-    setControlledOptions(newOptions);
-    form.setValue('options', newOptions);
+  const handleSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const id   = e.target.name.replace('options.', '');
+    const next = updateOpts(opts, id, e.target.value);
+    setOpts(next);
+    form.setValue('options', next);
   };
 
-  const handleOptionChangeByRadio = (name: string, value: string) => {
-    const newOptions = updateControlledOptions(controlledOptions, name, value);
-    setControlledOptions(newOptions);
-    form.setValue('options', newOptions);
+  const handleRadio = (name: string, value: string) => {
+    const next = updateOpts(opts, name, value);
+    setOpts(next);
+    form.setValue('options', next);
   };
 
   useEffect(() => {
-    if (!isAddingToCart && !hasErrors) {
-      if (formRef.current) {
-        formRef.current.reset();
-        const quantityInput = formRef.current.querySelector('input[name="quantity"]') as HTMLInputElement;
-        if (quantityInput) quantityInput.value = '1';
-        const productIdInput = formRef.current.querySelector('input[name="productId"]') as HTMLInputElement;
-        if (productIdInput) productIdInput.value = product.id!;
-      }
+    if (!isAddingToCart && !hasErrors && formRef.current) {
+      formRef.current.reset();
+      const qEl = formRef.current.querySelector('input[name="quantity"]') as HTMLInputElement;
+      if (qEl) qEl.value = '1';
+      const pEl = formRef.current.querySelector('input[name="productId"]') as HTMLInputElement;
+      if (pEl) pEl.value = product.id!;
     }
   }, [isAddingToCart, hasErrors, product.id]);
 
   useEffect(() => {
-    if (Object.keys(controlledOptions).length === 0) setControlledOptions(defaultValues.options);
-  }, [defaultValues.options, controlledOptions]);
-
-  useEffect(() => {
-    setControlledOptions(defaultValues.options);
+    if (!Object.keys(opts).length) setOpts(defaultValues.options);
   }, [defaultValues.options]);
 
-  const soldOut = variantIsSoldOut(selectedVariant) || productSoldOut;
-  const handleAddToCart = useCallback(() => { toggleCartDrawer(true); }, [toggleCartDrawer]);
+  useEffect(() => { setOpts(defaultValues.options); }, [defaultValues.options]);
+
+  useEffect(() => {
+    if (addToCartFetcher.state === 'idle' && addToCartFetcher.data?.cart && !hasErrors) {
+      toggleCartDrawer(true);
+    }
+  }, [addToCartFetcher.state, addToCartFetcher.data, hasErrors, toggleCartDrawer]);
 
   return (
-    <>
-      <section
-        className="relative min-h-screen selection:bg-[#C9A962] selection:text-[#1C1714]"
-        style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
-      >
-        {/* Atmospheric overlays */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
-          style={{ backgroundImage: PAPER_TEXTURE, opacity: 0.03 }}
-        />
-        <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 vignette-overlay" />
+    <div className="w-full" style={{ backgroundColor: '#FFFAF4' }}>
+      <RemixFormProvider {...form}>
+        <addToCartFetcher.Form
+          id="addToCartForm"
+          ref={formRef}
+          method="post"
+          action="/api/cart/line-items/create"
+          onSubmit={form.handleSubmit}
+        >
+          <input type="hidden" name="productId"        value={product.id} />
+          <input type="hidden" name="productTitle"     value={product.title} />
+          <input type="hidden" name="productThumbnail" value={product.images?.[0]?.url || product.thumbnail || ''} />
 
-        <RemixFormProvider {...form}>
-          <addToCartFetcher.Form
-            id="addToCartForm"
-            ref={formRef}
-            method="post"
-            action="/api/cart/line-items/create"
-            onSubmit={handleAddToCart}
-            className="relative z-10"
-          >
-            <input type="hidden" name="productId" value={product.id} />
-            <input type="hidden" name="productTitle" value={product.title} />
-            <input
-              type="hidden"
-              name="productThumbnail"
-              value={(product.images && product.images[0] && product.images[0].url) || product.thumbnail || ''}
-            />
+          {/* ═══════════════════════════════════════════
+              LAYOUT: mobile = fixed image + scroll card
+                      desktop = normal page flow
+          ═══════════════════════════════════════════ */}
+          <div className="flex flex-col md:block" style={{ height: '100svh' }}>
 
-            <Container className="px-0 sm:px-6 md:px-8 pt-8 pb-24">
-
-              {/* ── Breadcrumb ── */}
-              <div className="flex items-center gap-2 mb-10 px-4 sm:px-0">
-                {breadcrumbs.map((crumb, i) => (
-                  <span key={i} className="flex items-center gap-2">
-                    {i > 0 && <span style={{ color: '#4A3F35' }}>·</span>}
-                    {crumb.url ? (
-                      <Link
-                        to={crumb.url}
-                        className="transition-colors duration-200 hover:text-[#C9A962]"
-                        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#9C8B7A' }}
-                      >
-                        {crumb.label}
-                      </Link>
-                    ) : (
-                      <span
-                        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C9A962' }}
-                      >
-                        {crumb.label}
-                      </span>
-                    )}
-                  </span>
-                ))}
+            {/* ── HERO IMAGE (stays at top on mobile) ── */}
+            <div
+              className="relative flex-shrink-0 overflow-hidden"
+              style={{
+                height: '58vw',
+                minHeight: '260px',
+                maxHeight: '420px',
+                backgroundColor: '#F5EDE0',
+              }}
+            >
+              <div className="absolute inset-0">
+                <ProductImageGallery key={product.id} product={product} />
               </div>
 
-              {/* ── Main two-column layout ── */}
-              <motion.div 
-                className="grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-16 xl:gap-24"
-                variants={staggerContainer}
-                initial="hidden"
-                animate="visible"
+              {/* gradient fade into card */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-20 pointer-events-none"
+                style={{ background: 'linear-gradient(to top, #FFFAF4 0%, transparent 100%)' }}
+              />
+
+              {/* Back */}
+              <Link
+                to="/products"
+                className="absolute top-12 left-4 z-10 flex items-center justify-center w-9 h-9 rounded-full transition-all active:scale-95"
+                style={{
+                  backgroundColor: 'rgba(255,250,244,0.9)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 10px rgba(61,43,31,0.10)',
+                }}
+                aria-label="Kembali"
               >
+                <ArrowLeftIcon className="w-4 h-4" strokeWidth={2} style={{ color: '#3D2B1F' }} />
+              </Link>
 
-                {/* ── Left: Image Gallery ── */}
-                <motion.div variants={fadeUpVariant} className="mb-10 lg:mb-0">
-                  {/* Ornate frame wrapper */}
-                  <div
-                    className="ornate-frame ornate-frame-lg relative p-3"
-                    style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
-                  >
-                    <ProductImageGallery key={product.id} product={product} />
+              {/* Share */}
+              <div
+                className="absolute top-12 right-4 z-10 rounded-full overflow-hidden"
+                style={{
+                  backgroundColor: 'rgba(255,250,244,0.9)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 10px rgba(61,43,31,0.10)',
+                }}
+              >
+                <Share
+                  itemType="product"
+                  shareData={{
+                    title: product.title,
+                    text: truncate(product.description || '', { length: 200, separator: ' ' }),
+                  }}
+                />
+              </div>
 
-                    {/* Caption tag */}
-                    <div
-                      className="absolute -bottom-4 -left-4 py-2 px-4 z-20"
-                      style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}
-                    >
-                      <p className="text-xs italic" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
-                        Fig. — {product.title}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
+              {/* Koleksi badge */}
+              {product.collection && (
+                <div
+                  className="absolute top-12 left-1/2 -translate-x-1/2 z-10 px-3 py-1 rounded-full whitespace-nowrap"
+                  style={{
+                    backgroundColor: 'rgba(61,43,31,0.65)',
+                    backdropFilter: 'blur(6px)',
+                    color: '#E8D5B0',
+                    fontFamily: 'var(--font-label)',
+                    fontSize: '10px',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {product.collection.title}
+                </div>
+              )}
+            </div>
 
-                {/* ── Right: Product Info ── */}
-                <motion.div variants={staggerContainer} className="flex flex-col px-4 sm:px-0">
+            {/* ── INFO CARD — mobile: scrollable, desktop: normal ── */}
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              animate="visible"
+              className="flex-1 min-h-0 overflow-y-auto md:overflow-visible -mt-5"
+              style={{ borderRadius: '22px 22px 0 0', backgroundColor: '#FFFAF4' }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-2.5 pb-0">
+                <div className="w-9 h-1 rounded-full" style={{ backgroundColor: '#DDD0C4' }} />
+              </div>
 
-                  {/* Header */}
-                  <motion.header variants={fadeUpVariant} className="pb-6 mb-6 border-b border-[#4A3F35]">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <span className="academia-label mb-3 block">
-                          {product.collection ? product.collection.title : 'Single Edition'}
-                        </span>
-                        <h1
-                          className="text-4xl md:text-5xl leading-tight"
-                          style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
-                        >
-                          {product.title}
-                        </h1>
-                      </div>
-                      <Share
-                        itemType="product"
-                        shareData={{
-                          title: product.title,
-                          text: truncate(product.description || 'Check out this product', { length: 200, separator: ' ' }),
+              {/* ─ Content ─ */}
+              {/* pb accounts for: sticky bar (~56px) + BottomNav (64px) + gap */}
+              <div className="px-5 pt-3 pb-40 md:pb-32">
+
+                {/* Kategori chips */}
+                {!!product.categories?.length && (
+                  <motion.div variants={fadeUp} className="flex flex-wrap gap-1.5 mb-2">
+                    {product.categories.map((cat, i) => (
+                      <Link
+                        key={i}
+                        to={`/categories/${cat.handle}`}
+                        className="px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wide uppercase transition-all active:scale-95"
+                        style={{
+                          backgroundColor: '#FFF3E4',
+                          color: '#6B3A1F',
+                          border: '1px solid #E2CCB0',
+                          fontFamily: 'var(--font-label)',
                         }}
-                      />
-                    </div>
-
-                    {/* Review stars */}
-                    <div className="mt-4">
-                      <ProductReviewStars reviewsCount={reviewsCount} reviewStats={reviewStats} />
-                    </div>
-                  </motion.header>
-
-                  {/* Price */}
-                  <section aria-labelledby="product-information" className="mb-8">
-                    <h2 id="product-information" className="sr-only">Product information</h2>
-                    <div className="flex items-baseline gap-3">
-                      <span className="academia-label">Offered At</span>
-                      <p
-                        className="text-3xl"
-                        style={{ fontFamily: 'var(--font-display)', color: '#C9A962' }}
                       >
-                        {selectedVariant ? (
-                          <ProductPrice product={product} variant={selectedVariant} currencyCode={currencyCode} />
-                        ) : (
-                          <ProductPriceRange product={product} currencyCode={currencyCode} />
-                        )}
-                      </p>
-                    </div>
-                  </section>
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
 
-                  {/* Options — Select (> 5) */}
-                  {productSelectOptions && productSelectOptions.length > 5 && (
-                    <section aria-labelledby="product-options" className="mb-6">
-                      <h2 id="product-options" className="sr-only">Product options</h2>
-                      <div className="space-y-4">
-                        {productSelectOptions.map((option, optionIndex) => (
-                          <ProductOptionSelectorSelect
-                            key={optionIndex}
-                            option={option}
-                            value={controlledOptions[option.id]}
-                            onChange={handleOptionChangeBySelect}
-                            currencyCode={currencyCode}
-                          />
-                        ))}
-                      </div>
-                    </section>
+                {/* Judul + sold-out badge */}
+                <motion.div variants={fadeUp} className="flex items-start justify-between gap-2 mb-1">
+                  <h1
+                    className="text-2xl leading-snug flex-1"
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontWeight: 600,
+                      color: '#3D2B1F',
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    {product.title}
+                  </h1>
+                  {soldOut && (
+                    <span
+                      className="flex-shrink-0 mt-1 px-2.5 py-1 rounded-full text-[10px] font-semibold"
+                      style={{ backgroundColor: '#F5EDE0', color: '#9C8070', fontFamily: 'var(--font-label)' }}
+                    >
+                      Habis
+                    </span>
                   )}
-
-                  {/* Options — Radio (≤ 5) */}
-                  {productSelectOptions && productSelectOptions.length <= 5 && (
-                    <section aria-labelledby="product-options" className="mb-6 grid gap-5">
-                      <h2 id="product-options" className="sr-only">Product options</h2>
-                      {productSelectOptions.map((option, optionIndex) => (
-                        <div key={optionIndex}>
-                          <FieldLabel className="mb-2">{option.title}</FieldLabel>
-                          <ProductOptionSelectorRadio
-                            option={option}
-                            value={controlledOptions[option.id]}
-                            onChange={handleOptionChangeByRadio}
-                            currencyCode={currencyCode}
-                          />
-                        </div>
-                      ))}
-                    </section>
-                  )}
-
-                  {/* Divider */}
-                  <div className="ornate-divider ornate-divider-alt mb-8" aria-hidden="true" />
-
-                  {/* Add to Cart */}
-                  <div className="flex items-center gap-4 mb-8">
-                    {!soldOut && (
-                      <QuantitySelector
-                        variant={selectedVariant}
-                        className="!border-[#4A3F35] !rounded-none focus:!ring-[#C9A962] !bg-[#251E19] !text-[#E8DFD4]"
-                      />
-                    )}
-                    <div className="flex-1">
-                      {!soldOut ? (
-                        <SubmitButton className="btn-brass engraved group relative w-full gap-3 !rounded cursor-pointer">
-                          <span className="relative z-10 flex items-center justify-center gap-2">
-                            {isAddingToCart ? (
-                              <>
-                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Adding to Cart…
-                              </>
-                            ) : (
-                              <>
-                                Add to Cart
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-                                </svg>
-                              </>
-                            )}
-                          </span>
-                        </SubmitButton>
-                      ) : (
-                        <SubmitButton
-                          disabled
-                          className="pointer-events-none w-full h-12 border border-[#4A3F35] text-[#9C8B7A] bg-transparent !rounded"
-                          style={{ fontFamily: 'var(--font-label)', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase' }}
-                        >
-                          Sold Out
-                        </SubmitButton>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  {!!product.description && (
-                    <div className="pt-6 border-t border-[#4A3F35]">
-                      <h3 className="academia-label mb-4">I. &nbsp;About This Entry</h3>
-                      <div
-                        className="whitespace-pre-wrap leading-relaxed text-justify"
-                        style={{ fontFamily: 'var(--font-body)', fontSize: '1.0625rem', color: 'rgba(232,223,212,0.8)' }}
-                      >
-                        {product.description}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Categories */}
-                  {product.categories && product.categories.length > 0 && (
-                    <nav aria-label="Categories" className="mt-8">
-                      <h3 className="academia-label mb-3">II. &nbsp;Classification</h3>
-                      <ol className="flex flex-wrap items-center gap-2">
-                        {product.categories.map((category, categoryIndex) => (
-                          <li key={categoryIndex}>
-                            <Link
-                              to={`/categories/${category.handle}`}
-                              className="inline-block py-1 px-3 transition-colors duration-200"
-                              style={{
-                                fontFamily: 'var(--font-label)',
-                                fontSize: '0.55rem',
-                                letterSpacing: '0.2em',
-                                textTransform: 'uppercase',
-                                border: '1px solid #4A3F35',
-                                color: '#9C8B7A',
-                              }}
-                              onMouseEnter={e => {
-                                (e.currentTarget as HTMLElement).style.borderColor = '#C9A962';
-                                (e.currentTarget as HTMLElement).style.color = '#C9A962';
-                              }}
-                              onMouseLeave={e => {
-                                (e.currentTarget as HTMLElement).style.borderColor = '#4A3F35';
-                                (e.currentTarget as HTMLElement).style.color = '#9C8B7A';
-                              }}
-                            >
-                              {category.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ol>
-                    </nav>
-                  )}
-
-                  {/* Tags */}
-                  {product.tags && product.tags.length > 0 && (
-                    <nav aria-label="Tags" className="mt-6">
-                      <h3 className="academia-label mb-3">III. &nbsp;Keywords</h3>
-                      <ol className="flex flex-wrap items-center gap-2">
-                        {product.tags.map((tag, tagIndex) => (
-                          <li key={tagIndex}>
-                            <span
-                              className="inline-block py-1 px-3"
-                              style={{
-                                fontFamily: 'var(--font-label)',
-                                fontSize: '0.55rem',
-                                letterSpacing: '0.2em',
-                                textTransform: 'uppercase',
-                                backgroundColor: '#251E19',
-                                border: '1px solid #4A3F35',
-                                color: '#9C8B7A',
-                              }}
-                            >
-                              {tag.value}
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    </nav>
-                  )}
-
                 </motion.div>
-              </motion.div>
-            </Container>
-          </addToCartFetcher.Form>
-        </RemixFormProvider>
-      </section>
-    </>
+
+                {/* Deskripsi */}
+                {!!product.description && (
+                  <motion.p
+                    variants={fadeUp}
+                    className="text-sm leading-relaxed mb-4 mt-1"
+                    style={{ color: '#7A5C4E', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+                  >
+                    {product.description}
+                  </motion.p>
+                )}
+
+                {/* Divider "Pilihan" hanya jika ada options */}
+                {hasOptions && (
+                  <motion.div variants={fadeUp} className="flex items-center gap-3 mb-4">
+                    <div className="flex-1 h-px" style={{ backgroundColor: '#E2CCB0' }} />
+                    <span
+                      className="text-[10px] tracking-[0.25em] uppercase"
+                      style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                    >
+                      Pilihan
+                    </span>
+                    <div className="flex-1 h-px" style={{ backgroundColor: '#E2CCB0' }} />
+                  </motion.div>
+                )}
+
+                {/* Options — Select (> 5 nilai) */}
+                {hasOptions && productSelectOptions!.length > 5 && (
+                  <motion.section variants={fadeUp} className="mb-4 space-y-4">
+                    {productSelectOptions!.map((option, i) => (
+                      <ProductOptionSelectorSelect
+                        key={i}
+                        option={option}
+                        value={opts[option.id]}
+                        onChange={handleSelect}
+                        currencyCode={currencyCode}
+                      />
+                    ))}
+                  </motion.section>
+                )}
+
+                {/* Options — Radio chip (≤ 5 nilai) */}
+                {hasOptions && productSelectOptions!.length <= 5 && (
+                  <motion.section variants={fadeUp} className="mb-4 grid gap-4">
+                    {productSelectOptions!.map((option, i) => (
+                      <div key={i}>
+                        <p
+                          className="text-[10px] tracking-[0.2em] uppercase mb-2"
+                          style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                        >
+                          {option.title}
+                        </p>
+                        <ProductOptionSelectorRadio
+                          option={option}
+                          value={opts[option.id]}
+                          onChange={handleRadio}
+                          currencyCode={currencyCode}
+                        />
+                      </div>
+                    ))}
+                  </motion.section>
+                )}
+
+                {/* Tags */}
+                {!!product.tags?.length && (
+                  <motion.div variants={fadeUp} className="flex flex-wrap gap-2 mt-1">
+                    {product.tags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 rounded-full text-[11px]"
+                        style={{
+                          backgroundColor: '#F5EDE0',
+                          color: '#9C8070',
+                          fontFamily: 'var(--font-body)',
+                          fontWeight: 300,
+                        }}
+                      >
+                        #{tag.value}
+                      </span>
+                    ))}
+                  </motion.div>
+                )}
+
+              </div>
+            </motion.div>
+
+          </div>{/* end flex layout */}
+
+          {/* ═══════════════════════════════════════════
+              STICKY BOTTOM BAR
+              Mobile: bottom-16 (di atas BottomNav)
+              Desktop: bottom-0
+          ═══════════════════════════════════════════ */}
+          <div
+            className="fixed left-0 right-0 z-40 bottom-16 md:bottom-0"
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderTop: '1.5px solid #F0E6D6',
+              boxShadow: '0 -4px 20px rgba(61,43,31,0.08)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
+            }}
+          >
+            <div className="flex items-center gap-2.5 px-4 py-2.5">
+
+              {/* Harga — compact */}
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[9px] tracking-[0.18em] uppercase leading-none mb-0.5"
+                  style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                >
+                  Harga
+                </p>
+                <p
+                  className="text-sm leading-none font-semibold truncate"
+                  style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
+                >
+                  {selectedVariant
+                    ? <ProductPrice product={product} variant={selectedVariant} currencyCode={currencyCode} />
+                    : <ProductPriceRange product={product} currencyCode={currencyCode} />
+                  }
+                </p>
+              </div>
+
+              {/* Stepper */}
+              {!soldOut && <QuantitySelector variant={selectedVariant} />}
+
+              {/* CTA */}
+              {!soldOut ? (
+                <SubmitButton
+                  className="cursor-pointer flex-shrink-0 flex items-center gap-1.5 px-4 h-10 rounded-xl text-[13px] font-semibold"
+                  style={{
+                    backgroundColor: '#3D2B1F',
+                    color: '#FFFAF4',
+                    fontFamily: 'var(--font-label)',
+                    boxShadow: '0 3px 12px rgba(61,43,31,0.2)',
+                    border: 'none',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {isAddingToCart
+                    ? <span className="w-3.5 h-3.5 rounded-full border-[1.5px] animate-spin flex-shrink-0" style={{ borderColor: 'rgba(255,250,244,0.3)', borderTopColor: '#FFFAF4' }} />
+                    : <ShoppingBagIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                  }
+                  {isAddingToCart ? 'Menambahkan…' : 'Tambah'}
+                </SubmitButton>
+              ) : (
+                <div
+                  className="flex-shrink-0 px-4 h-10 flex items-center rounded-xl text-[13px] font-semibold opacity-45"
+                  style={{ backgroundColor: '#E2CCB0', color: '#9C8070', fontFamily: 'var(--font-label)' }}
+                >
+                  Habis
+                </div>
+              )}
+
+            </div>
+          </div>
+
+        </addToCartFetcher.Form>
+      </RemixFormProvider>
+    </div>
   );
 };

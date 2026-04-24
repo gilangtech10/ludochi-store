@@ -1,6 +1,7 @@
 import { formatPrice } from '@libs/util/prices';
 import type { ChangeEvent, FC } from 'react';
 import { useRemixFormContext } from 'remix-hook-form';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export interface ProductOptionSelectorProps {
   option: {
@@ -27,80 +28,64 @@ export const ProductOptionSelectorSelect: FC<ProductOptionSelectorProps> = ({
   currencyCode,
 }) => {
   const { register } = useRemixFormContext();
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (onChange) onChange(event);
-  };
 
-  const filteredValues = option.values.filter(
-    (productOptionValue, index, self) => self.findIndex((item) => item.value === productOptionValue.value) === index,
+  const filtered = option.values.filter(
+    (v, i, arr) => arr.findIndex((x) => x.value === v.value) === i,
   );
 
-  // Sort values by price (low to high)
-  const sortedValues = [...filteredValues].sort((a, b) => {
-    const aPrice = a.minPrice ?? a.exactPrice ?? 0;
-    const bPrice = b.minPrice ?? b.exactPrice ?? 0;
-    return aPrice - bPrice;
+  const sorted = [...filtered].sort((a, b) => {
+    return (a.minPrice ?? a.exactPrice ?? 0) - (b.minPrice ?? b.exactPrice ?? 0);
   });
 
-  // Format options with price information
-  const formattedOptions = sortedValues.map((optionValue) => {
-    let label = optionValue.value;
-
-    // Add price information
-    if (optionValue.minPrice !== undefined && optionValue.maxPrice !== undefined) {
-      if (optionValue.minPrice === optionValue.maxPrice) {
-        // Single price
-        label += ` - ${formatPrice(optionValue.minPrice, { currency: currencyCode })}`;
-      } else {
-        // Price range
-        label += ` - ${formatPrice(optionValue.minPrice, { currency: currencyCode })} – ${formatPrice(optionValue.maxPrice, { currency: currencyCode })}`;
-      }
-    } else if (optionValue.exactPrice !== undefined) {
-      // Exact price
-      label += ` - ${formatPrice(optionValue.exactPrice, { currency: currencyCode })}`;
-
-      // Add discount if available
-      if (optionValue.discountPercentage) {
-        label += ` (${optionValue.discountPercentage}% off)`;
-      }
+  const formatted = sorted.map((v) => {
+    let label = v.value;
+    if (v.minPrice !== undefined && v.maxPrice !== undefined) {
+      const p = v.minPrice === v.maxPrice
+        ? formatPrice(v.minPrice, { currency: currencyCode })
+        : `${formatPrice(v.minPrice, { currency: currencyCode })}+`;
+      label += ` · ${p}`;
+    } else if (v.exactPrice !== undefined) {
+      label += ` · ${formatPrice(v.exactPrice, { currency: currencyCode })}`;
+      if (v.discountPercentage) label += ` (${v.discountPercentage}% off)`;
     }
-
-    return {
-      value: optionValue.value,
-      label,
-    };
+    return { value: v.value, label };
   });
 
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={option.id}
-        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A962' }}
+      <p
+        className="text-[10px] tracking-[0.2em] uppercase"
+        style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
       >
         {option.title}
-      </label>
-      <select
-        {...register(`options.${option.id}`)}
-        id={option.id}
-        className="academia-input focus:border-[#C9A962] focus:ring-[#C9A962]/20"
-        defaultValue={value}
-      >
-        {formattedOptions.map((optValue, valueIndex) => (
-          <option key={valueIndex} value={optValue.value} style={{ backgroundColor: '#251E19', color: '#E8DFD4' }}>
-            {optValue.label || optValue.value}
-          </option>
-        ))}
-      </select>
+      </p>
+      <div className="relative">
+        <select
+          {...register(`options.${option.id}`)}
+          id={option.id}
+          defaultValue={value}
+          className="w-full appearance-none rounded-2xl px-4 py-3 text-sm pr-10 transition-all duration-200 cursor-pointer outline-none"
+          style={{
+            backgroundColor: '#FFFAF4',
+            border: '1.5px solid #E2CCB0',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            color: '#3D2B1F',
+          }}
+          onFocus={(e) => { (e.target as HTMLSelectElement).style.borderColor = '#C47C3A'; }}
+          onBlur={(e) => { (e.target as HTMLSelectElement).style.borderColor = '#E2CCB0'; }}
+        >
+          {formatted.map((opt, i) => (
+            <option key={i} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDownIcon
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+          style={{ color: '#C47C3A' }}
+        />
+      </div>
     </div>
   );
-
-  // return (
-  //   <FieldSelect
-  //     name={`options.${option.id}`}
-  //     label={option.title}
-  //     options={[{ label: 'Select one', value: '' }, ...formattedOptions]}
-  //     onChange={handleChange}
-  //     inputProps={{ value }}
-  //   />
-  // );
 };

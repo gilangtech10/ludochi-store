@@ -18,10 +18,8 @@ module.exports = {
         display: ['var(--font-display)'],
         body: ['var(--font-body)'],
         sans: ['var(--font-body)'],
-        ballet: ['Ballet'],
-        italiana: ['Italiana'],
-        sen: ['Sen'],
-        aboreto: ['Aboreto'],
+        mincho: ['"Shippori Mincho"', 'serif'],
+        noto: ['"Noto Sans JP"', 'sans-serif'],
         nunito: ['Nunito', 'sans-serif'],
       },
       colors: {

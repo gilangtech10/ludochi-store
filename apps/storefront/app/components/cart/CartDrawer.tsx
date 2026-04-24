@@ -1,167 +1,106 @@
-import { Button } from '@app/components/common/buttons/Button';
-import { ButtonLink } from '@app/components/common/buttons/ButtonLink';
-import { IconButton } from '@app/components/common/buttons/IconButton';
 import { useCart } from '@app/hooks/useCart';
 import { useRegion } from '@app/hooks/useRegion';
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import XMarkIcon from '@heroicons/react/24/outline/XMarkIcon';
+import { ShoppingBagIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { formatCartSubtotal, formatPrice } from '@libs/util/prices';
 import clsx from 'clsx';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { useFetchers, useNavigate } from 'react-router';
 import { CartDrawerItem } from './CartDrawerItem';
 
-// Cart Drawer Header Component
 const CartDrawerHeader: FC<{ itemCount: number; onClose: () => void }> = ({ itemCount, onClose }) => (
-  <div className="flex items-start justify-between pb-4" style={{ borderBottom: '1px solid #4A3F35' }}>
-    <DialogTitle
-      className="text-2xl tracking-tight"
-      style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontStyle: 'italic', color: '#E8DFD4' }}
-    >
-      Your Selection{' '}
+  <div
+    className="relative overflow-hidden px-5 pt-5 pb-4 flex items-start justify-between flex-shrink-0"
+    style={{ background: 'linear-gradient(150deg, #3D2B1F 0%, #6B3A1F 100%)' }}
+  >
+    {/* Decorative circles */}
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-10"
+      style={{ backgroundColor: '#E8D5B0' }}
+    />
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute -bottom-6 -left-6 w-20 h-20 rounded-full opacity-10"
+      style={{ backgroundColor: '#E8D5B0' }}
+    />
+
+    <div className="relative">
+      <p
+        className="text-[9px] tracking-[0.3em] uppercase mb-1"
+        style={{ color: 'rgba(232,213,176,0.55)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+      >
+        ショッピングカート
+      </p>
+      <DialogTitle
+        className="text-xl leading-tight"
+        style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
+      >
+        Keranjang Saya
+      </DialogTitle>
       {itemCount > 0 && (
-        <span
-          className="pl-2 not-italic text-sm"
-          style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', color: '#C9A962' }}
+        <p
+          className="text-[11px] mt-0.5"
+          style={{ color: 'rgba(255,250,244,0.5)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
         >
-          ({itemCount} {itemCount === 1 ? 'item' : 'items'})
-        </span>
+          {itemCount} item dipilih
+        </p>
       )}
-    </DialogTitle>
-    <div className="ml-3 flex h-7 items-center">
-      <IconButton
-        icon={XMarkIcon}
-        onClick={onClose}
-        className="-m-2 transition-colors"
-        style={{ color: '#9C8B7A' }}
-        aria-label="Close cart"
-      />
     </div>
+
+    <button
+      onClick={onClose}
+      className="relative mt-0.5 w-8 h-8 flex items-center justify-center rounded-full flex-shrink-0 transition-opacity hover:opacity-75 active:scale-95"
+      style={{ backgroundColor: 'rgba(255,250,244,0.12)', border: '1px solid rgba(255,250,244,0.2)' }}
+      aria-label="Tutup keranjang"
+    >
+      <XMarkIcon className="w-4 h-4" style={{ color: '#FFFAF4' }} />
+    </button>
   </div>
 );
 
-// Cart Drawer Empty Component
-const CartDrawerEmpty: FC = () => (
-  <p
-    className="text-center italic text-sm mt-8"
-    style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
-  >
-    Your selection is currently empty.
-  </p>
+const CartDrawerEmpty: FC<{ onClose: () => void }> = ({ onClose }) => (
+  <div className="flex flex-col items-center justify-center py-14 px-8 text-center">
+    <div
+      className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+      style={{ backgroundColor: '#FFF3E4' }}
+    >
+      <ShoppingBagIcon className="w-7 h-7" style={{ color: '#C4A882' }} />
+    </div>
+    <p
+      className="text-sm mb-1"
+      style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+    >
+      Keranjang masih kosong
+    </p>
+    <p className="text-xs mb-5" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
+      Tambahkan produk untuk mulai memesan
+    </p>
+    <button
+      onClick={onClose}
+      className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-xs font-semibold transition-all duration-200 active:scale-95"
+      style={{ backgroundColor: '#6B3A1F', color: '#FFFAF4', fontFamily: 'var(--font-label)' }}
+    >
+      Lihat Menu <ArrowRightIcon className="w-3.5 h-3.5" />
+    </button>
+  </div>
 );
 
-// Cart Drawer Loading Component
 const CartDrawerLoading: FC<{ className?: string }> = ({ className }) => (
-  <li className={clsx('list-none', className)}>
-    <div className="flex animate-pulse space-x-4">
-      <div className="h-24 w-24 rounded-md bg-slate-300" />
-      <div className="flex h-24 w-full flex-1 flex-col space-y-3 py-1">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 h-2 rounded bg-slate-300" />
-          <div className="col-span-1 h-2 rounded bg-slate-300" />
-        </div>
-        <div className="h-2 rounded bg-slate-300" />
-        <div className="flex-1" />
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-1 h-2 rounded bg-slate-300" />
-          <div className="col-span-2" />
-          <div className="col-span-1 h-2 rounded bg-slate-300" />
-        </div>
+  <li className={clsx('list-none px-5 py-4', className)}>
+    <div className="flex animate-pulse gap-4">
+      <div
+        className="h-20 w-20 rounded-xl flex-shrink-0"
+        style={{ backgroundColor: '#F0E6D6' }}
+      />
+      <div className="flex flex-1 flex-col gap-2.5 py-1">
+        <div className="h-2.5 rounded-full w-3/4" style={{ backgroundColor: '#F0E6D6' }} />
+        <div className="h-2 rounded-full w-1/2" style={{ backgroundColor: '#F0E6D6' }} />
+        <div className="mt-auto h-2 rounded-full w-1/4" style={{ backgroundColor: '#F0E6D6' }} />
       </div>
     </div>
   </li>
-);
-
-// Cart Drawer Items Component
-const CartDrawerItems: FC<{
-  items: any[];
-  isRemovingItemId?: string;
-  currencyCode: string;
-}> = ({ items, isRemovingItemId, currencyCode }) => (
-  <ul className="-my-6 list-none mt-2" style={{ borderColor: '#4A3F35' }}>
-    {items.map((item) => (
-      <CartDrawerItem key={item.id} isRemoving={isRemovingItemId === item.id} item={item} currencyCode={currencyCode} />
-    ))}
-  </ul>
-);
-
-// Cart Drawer Content Component
-const CartDrawerContent: FC<{
-  items: any[];
-  isRemovingItemId?: string;
-  isAddingItem: boolean;
-  showEmptyCartMessage: boolean;
-  isRemovingLastItem: boolean;
-  currencyCode: string;
-}> = ({ items, isRemovingItemId, isAddingItem, showEmptyCartMessage, isRemovingLastItem, currencyCode }) => {
-  // Ensure we're correctly determining when to show items vs empty message
-  const hasItems = items && items.length > 0;
-
-  return (
-    <div className="mt-8">
-      <div className="flow-root">
-        {/* Show items when there are items in the cart */}
-        {hasItems && <CartDrawerItems items={items} isRemovingItemId={isRemovingItemId} currencyCode={currencyCode} />}
-
-        {/* Show loading item when adding items */}
-        {isAddingItem && <CartDrawerLoading className={clsx(hasItems ? 'pt-10' : 'py-0')} />}
-
-        {/* Only show empty cart message when cart is truly empty and not loading */}
-        {!hasItems && !isAddingItem && <CartDrawerEmpty />}
-      </div>
-    </div>
-  );
-};
-
-// Cart Drawer Footer Component
-const CartDrawerFooter: FC<{
-  navigatingToCheckout: boolean;
-  cart: any;
-  currencyCode: string;
-  itemCount: number;
-  onCheckout: () => void;
-  onClose: () => void;
-}> = ({ cart, currencyCode, itemCount, navigatingToCheckout, onCheckout, onClose }) => (
-  <div
-    className="px-4 py-6 sm:px-6 z-10"
-    style={{ borderTop: '1px solid #4A3F35', backgroundColor: '#1C1714' }}
-  >
-    <div className="flex justify-between items-end" style={{ fontFamily: 'var(--font-display)', color: '#E8DFD4' }}>
-      <p
-        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#C9A962' }}
-      >
-        Order Total
-      </p>
-      <p className="text-2xl">
-        {cart
-          ? formatCartSubtotal(cart)
-          : formatPrice(0, { currency: currencyCode })}
-      </p>
-    </div>
-    <div className="mt-8">
-      <Button
-        variant="primary"
-        disabled={itemCount === 0 || navigatingToCheckout}
-        onClick={onCheckout}
-        className="btn-brass engraved !h-12 w-full !text-base cursor-pointer"
-      >
-        {navigatingToCheckout ? 'Redirecting…' : 'Proceed to Checkout'}
-      </Button>
-    </div>
-    <div className="mt-6 flex justify-center text-center">
-      <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.85rem', color: '#9C8B7A' }}>
-        or{' '}
-        <ButtonLink
-          size="sm"
-          onClick={onClose}
-          className="italic transition-colors"
-          style={{ color: '#C9A962' }}
-        >
-          Continue Browsing <span aria-hidden="true">&rarr;</span>
-        </ButtonLink>
-      </p>
-    </div>
-  </div>
 );
 
 export const CartDrawer: FC = () => {
@@ -179,21 +118,19 @@ export const CartDrawer: FC = () => {
   const allFetchers = useFetchers();
   const [navigatingToCheckout, setNavigatingToCheckout] = useState(false);
 
-  // Track if any cart-related fetchers are active
   const isCartLoading = allFetchers.some(
     (f) => (f.state === 'submitting' || f.state === 'loading') && f.key.startsWith('cart:'),
   );
 
-  // Local state to control the dialog - initialize with cartDrawerOpen
   const [isOpen, setIsOpen] = useState(false);
 
-  // Sync our local state with the cart drawer state
   useEffect(() => {
     setIsOpen(cartDrawerOpen === true);
   }, [cartDrawerOpen]);
 
   const lineItems = cart?.items ?? [];
   const lineItemsTotal = lineItems.reduce((acc, item) => acc + item.quantity, 0);
+  const hasItems = lineItems.length > 0;
 
   const handleCheckoutClick = useCallback(() => {
     setNavigatingToCheckout(true);
@@ -210,51 +147,135 @@ export const CartDrawer: FC = () => {
 
   return (
     <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
-      {/* Backdrop with transition */}
+      {/* Backdrop */}
       <DialogBackdrop
         transition
-        className="fixed inset-0 bg-gray-300 bg-opacity-50 backdrop-blur-sm duration-300 ease-out data-[closed]:opacity-0"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm duration-300 ease-out data-[closed]:opacity-0"
       />
 
       <div className="fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-            {/* Panel with transition */}
+          {/* Mobile: bottom sheet | Desktop: right panel */}
+          <div className="pointer-events-none fixed inset-x-0 bottom-0 sm:inset-x-auto sm:inset-y-0 sm:right-0 sm:w-[420px]">
             <DialogPanel
               transition
-              className="pointer-events-auto w-screen max-w-md transform duration-500 ease-in-out data-[closed]:translate-x-full"
+              className={clsx(
+                'pointer-events-auto w-full transform duration-500 ease-in-out',
+                'data-[closed]:translate-y-full',
+                'sm:data-[closed]:translate-y-0 sm:data-[closed]:translate-x-full',
+                'sm:h-full',
+              )}
             >
-              <div className="flex h-full flex-col overflow-y-scroll selection:bg-[#C9A962] selection:text-[#1C1714] shadow-xl relative" style={{ backgroundColor: '#1C1714', borderLeft: '1px solid #4A3F35' }}>
-                {/* Paper Texture overlay */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none fixed inset-0 z-0 mix-blend-overlay"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`, opacity: 0.03 }}
-                />
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 z-10">
-                  <CartDrawerHeader itemCount={lineItemsTotal} onClose={handleClose} />
-
-                  <CartDrawerContent
-                    items={lineItems}
-                    isRemovingItemId={isRemovingItemId}
-                    isAddingItem={isAddingItem || isCartLoading}
-                    showEmptyCartMessage={showEmptyCartMessage}
-                    isRemovingLastItem={isRemovingLastItem}
-                    currencyCode={region.currency_code}
-                  />
+              <div
+                className="flex flex-col overflow-hidden shadow-2xl"
+                style={{
+                  backgroundColor: '#FFFAF4',
+                  maxHeight: '92svh',
+                  borderRadius: '20px 20px 0 0',
+                }}
+              >
+                {/* ── Drag handle (mobile only) ── */}
+                <div className="sm:hidden flex justify-center pt-2.5 pb-1 flex-shrink-0" style={{ backgroundColor: '#3D2B1F' }}>
+                  <div className="w-8 h-1 rounded-full" style={{ backgroundColor: 'rgba(255,250,244,0.25)' }} />
                 </div>
 
-                {/* Footer */}
-                <CartDrawerFooter
-                  navigatingToCheckout={navigatingToCheckout}
-                  cart={cart}
-                  currencyCode={region.currency_code}
-                  itemCount={lineItemsTotal}
-                  onCheckout={handleCheckoutClick}
-                  onClose={handleClose}
-                />
+                {/* ── Header ── */}
+                <CartDrawerHeader itemCount={lineItemsTotal} onClose={handleClose} />
+
+                {/* ── Scrollable content ── */}
+                <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#FFFAF4' }}>
+                  {hasItems && (
+                    <ul className="list-none divide-y" style={{ borderColor: '#F0E6D6' }}>
+                      {lineItems.map((item) => (
+                        <CartDrawerItem
+                          key={item.id}
+                          isRemoving={isRemovingItemId === item.id}
+                          item={item}
+                          currencyCode={region.currency_code}
+                        />
+                      ))}
+                    </ul>
+                  )}
+
+                  {(isAddingItem || isCartLoading) && (
+                    <CartDrawerLoading className={hasItems ? 'border-t' : ''} />
+                  )}
+
+                  {!hasItems && !isAddingItem && !isCartLoading && (
+                    <CartDrawerEmpty onClose={handleClose} />
+                  )}
+                </div>
+
+                {/* ── Footer ── */}
+                <div
+                  className="px-5 pt-4 pb-5 flex-shrink-0"
+                  style={{ backgroundColor: '#FFFFFF', borderTop: '1px solid #F0E6D6' }}
+                >
+                  {/* Total row */}
+                  <div className="flex items-end justify-between mb-4">
+                    <div>
+                      <p
+                        className="text-[9px] tracking-[0.25em] uppercase mb-0.5"
+                        style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                      >
+                        Total Pesanan
+                      </p>
+                      <p
+                        className="text-xs"
+                        style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+                      >
+                        Belum termasuk ongkos kirim
+                      </p>
+                    </div>
+                    <p
+                      className="text-2xl"
+                      style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+                    >
+                      {cart
+                        ? formatCartSubtotal(cart)
+                        : formatPrice(0, { currency: region.currency_code })}
+                    </p>
+                  </div>
+
+                  {/* Checkout button */}
+                  <button
+                    disabled={lineItemsTotal === 0 || navigatingToCheckout}
+                    onClick={handleCheckoutClick}
+                    className="w-full py-3.5 rounded-2xl text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-40 flex items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: '#3D2B1F',
+                      color: '#FFFAF4',
+                      fontFamily: 'var(--font-label)',
+                      boxShadow: '0 4px 14px rgba(61,43,31,0.25)',
+                    }}
+                  >
+                    {navigatingToCheckout ? (
+                      <>
+                        <span className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'rgba(255,250,244,0.5)', borderTopColor: 'transparent' }} />
+                        Memproses…
+                      </>
+                    ) : (
+                      <>
+                        Pesan Sekarang
+                        <ArrowRightIcon className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-center mt-3 text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
+                    atau{' '}
+                    <button
+                      onClick={handleClose}
+                      className="font-semibold transition-opacity hover:opacity-70"
+                      style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                    >
+                      lanjut belanja →
+                    </button>
+                  </p>
+
+                  {/* iOS safe area */}
+                  <div className="h-safe-b sm:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} />
+                </div>
               </div>
             </DialogPanel>
           </div>

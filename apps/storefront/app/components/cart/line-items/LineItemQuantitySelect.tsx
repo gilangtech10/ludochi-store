@@ -57,7 +57,6 @@ export const LineItemQuantitySelect: FC<LineItemQuantitySelectProps> = ({
         onSubmit={form.handleSubmit}
       >
         <QuantitySelector
-          formId={formId}
           className={clsx({
             'pointer-events-none opacity-50': isLoading,
           })}

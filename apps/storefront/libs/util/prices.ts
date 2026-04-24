@@ -2,22 +2,21 @@ import { StoreCart, StoreCartLineItem, StoreProduct, StoreProductVariant } from 
 import isNumber from 'lodash/isNumber';
 import merge from 'lodash/merge';
 
-const locale = 'en-US';
 export interface FormatPriceOptions {
   currency: Intl.NumberFormatOptions['currency'];
   quantity?: number;
 }
 
 export function formatPrice(amount: number | null, options: FormatPriceOptions) {
-  const defaultOptions = {
-    currency: 'usd',
-    quantity: 1,
-  };
+  const defaultOptions = { currency: 'idr', quantity: 1 };
   const { currency, quantity } = merge({}, defaultOptions, options);
 
-  return new Intl.NumberFormat(locale, {
+  const isIDR = currency.toUpperCase() === 'IDR';
+  return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency,
+    minimumFractionDigits: isIDR ? 0 : 2,
+    maximumFractionDigits: isIDR ? 0 : 2,
   }).format((amount || 0) * quantity);
 }
 

@@ -5,530 +5,433 @@ import { getMergedPageMeta } from '@libs/util/page';
 import { ProductPrice } from '@app/components/product/ProductPrice';
 import { useRegion } from '@app/hooks/useRegion';
 import { motion, Variants } from 'framer-motion';
+import {
+  MapPinIcon,
+  ArrowRightIcon,
+  ShoppingBagIcon,
+} from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react';
+import { useCart } from '@app/hooks/useCart';
+import { useRootLoaderData } from '@app/hooks/useRootLoaderData';
 
-const fadeUpVariant: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+const fadeUp: Variants = {
+  hidden:  { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
 };
 
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
+const stagger: Variants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.09 } },
 };
 
 export const loader = async (args: LoaderFunctionArgs) => {
-  const { products } = await fetchProducts(args.request, { limit: 3 });
+  const { products } = await fetchProducts(args.request, { limit: 6 });
   return { products };
 };
 
 export const meta: MetaFunction<typeof loader> = getMergedPageMeta;
 
-// Paper texture SVG (inline, no separate file needed)
-const PAPER_TEXTURE = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`;
+const CATEGORIES = [
+  { label: 'Semua',   href: '/products' },
+  { label: 'Donat',   href: '/categories/donut' },
+  { label: 'Mochi',   href: '/categories/mochi' },
+  { label: 'Minuman', href: '/categories/drinks' },
+  { label: 'Bundle',  href: '/categories/bundle' },
+];
+
+function useGreeting() {
+  const [greeting, setGreeting] = useState('Selamat Datang');
+  useEffect(() => {
+    const h = new Date().getHours();
+    if (h < 11)      setGreeting('Selamat Pagi');
+    else if (h < 15) setGreeting('Selamat Siang');
+    else if (h < 18) setGreeting('Selamat Sore');
+    else             setGreeting('Selamat Malam');
+  }, []);
+  return greeting;
+}
 
 export default function IndexRoute() {
   const { products } = useLoaderData<typeof loader>();
-  const { region } = useRegion();
+  const { region }   = useRegion();
+  const greeting     = useGreeting();
+  const { cart, toggleCartDrawer } = useCart();
+  const rootLoader   = useRootLoaderData();
+  const hasProducts  = rootLoader?.hasPublishedProducts;
+  const cartCount    = cart?.items?.reduce((acc, item) => acc + item.quantity, 0) ?? 0;
 
   return (
-    <div
-      className="w-full selection:bg-[#C9A962] selection:text-[#1C1714] relative"
-      style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
-    >
+    <div className="w-full min-h-screen" style={{ backgroundColor: '#FFFAF4', color: '#3D2B1F' }}>
 
-      {/* ── Global atmospheric overlays ─────────────────────────────── */}
-
-      {/* Paper grain texture */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-50 mix-blend-overlay"
-        style={{ backgroundImage: PAPER_TEXTURE, opacity: 0.03 }}
-      />
-      {/* Vignette */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-40 vignette-overlay"
-      />
-
-
-      {/* ═══════════════════════════════════════════════════════════════
-          VOLUME I — HERO
-      ═══════════════════════════════════════════════════════════════ */}
+      {/* ─────────────────────────────────────────
+          GREETING HEADER
+      ───────────────────────────────────────── */}
       <section
-        className="relative w-full overflow-hidden border-b border-[#4A3F35]"
+        className="relative overflow-hidden px-5 pt-10 pb-8"
         style={{
-          paddingTop: 'calc(var(--mkt-header-height-desktop) + 5rem)',
-          paddingBottom: '6rem',
-          backgroundColor: '#1C1714',
+          background: 'linear-gradient(150deg, #3D2B1F 0%, #6B3A1F 100%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-24 flex flex-col lg:flex-row items-center gap-16 lg:gap-24 relative z-10">
+        {/* Subtle circle decoration */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-10"
+          style={{ backgroundColor: '#E8D5B0' }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-10 -left-10 w-32 h-32 rounded-full opacity-10"
+          style={{ backgroundColor: '#E8D5B0' }}
+        />
 
-          {/* ── Left: Text ── */}
-          <motion.div 
-            variants={staggerContainer}
+        <div className="relative flex items-start justify-between">
+          {/* Left: greeting */}
+          <motion.div
+            variants={stagger}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="w-full lg:w-[55%] flex flex-col items-center lg:items-start text-center lg:text-left"
+            animate="visible"
           >
-
-            <motion.span variants={fadeUpVariant} className="academia-label mb-8">Volume I &nbsp;·&nbsp; Lumer Donat &amp; Mochi — Jakarta</motion.span>
-
-            <motion.h1
-              variants={fadeUpVariant}
-              className="text-5xl md:text-6xl lg:text-[5.5rem] leading-[1.08] tracking-tight mb-8"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
-            >
-              Your Favourite<br />
-              <em style={{ color: '#C9A962' }}>Sweet</em> Retreat.
-            </motion.h1>
-
             <motion.p
-              variants={fadeUpVariant}
-              className="text-lg md:text-xl leading-relaxed max-w-lg mb-12"
-              style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.8)' }}
+              variants={fadeUp}
+              className="text-[10px] tracking-[0.25em] uppercase mb-2"
+              style={{ color: 'rgba(232,213,176,0.55)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
             >
-              Enjoy our freshly-made homemade donuts, pillowy mochi, quality coffee
-              &amp; matcha in a cozy aesthetic café. Dine-in, take away, or order online
-              — LuDoChi is always here for you.
+              ドーナツと餅パン
             </motion.p>
-
-            <motion.div variants={fadeUpVariant} className="flex flex-col sm:flex-row items-center gap-5 w-full sm:w-auto">
-              <Link to="/products" className="btn-brass engraved w-full sm:w-auto gap-3">
-                Explore Our Menu
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                </svg>
-              </Link>
-              <Link to="/about-us" className="btn-outline-brass w-full sm:w-auto">
-                Our Story
-              </Link>
-            </motion.div>
+            <motion.h1
+              variants={fadeUp}
+              className="text-2xl sm:text-3xl mb-1"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
+            >
+              {greeting}!
+            </motion.h1>
+            <motion.p
+              variants={fadeUp}
+              className="text-sm"
+              style={{ color: 'rgba(255,250,244,0.55)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+            >
+              Mau pesan apa hari ini?
+            </motion.p>
           </motion.div>
 
-          {/* ── Right: Image in vintage frame ── */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, margin: "-100px" }}
-            className="w-full lg:w-[45%] flex justify-center lg:justify-end"
-          >
-            <div className="ornate-frame ornate-frame-lg relative w-full max-w-[480px] p-3 group" style={{ backgroundColor: '#251E19', border: '1px solid #4A3F35' }}>
-
-              {/* Arch-top image container */}
-              <div className="arch-top overflow-hidden" style={{ aspectRatio: '4/5' }}>
-                <img
-                  src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=1000&auto=format&fit=crop"
-                  alt="LuDoChi Cafe Interior — a warm scholarly reading room"
-                  className="w-full h-full object-cover sepia-aged scale-[1.02] group-hover:scale-[1.07] transition-transform duration-700"
-                />
-              </div>
-
-              {/* Caption tag */}
-              <div
-                className="absolute -bottom-4 -right-4 py-2 px-5 z-20 group-hover:-translate-y-1 group-hover:-translate-x-1 transition-transform duration-500"
-                style={{ backgroundColor: '#251E19', border: '1px solid #C9A962' }}
-              >
-                <p className="text-sm italic" style={{ fontFamily: 'var(--font-body)', color: '#E8DFD4' }}>
-                  Fig. 1 — The Reading Room
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
+          {/* Right: cart button */}
+          {!!cart && hasProducts && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              onClick={() => toggleCartDrawer(true)}
+              className="relative flex items-center justify-center w-10 h-10 rounded-full flex-shrink-0 mt-1"
+              style={{ backgroundColor: 'rgba(255,250,244,0.12)', border: '1px solid rgba(255,250,244,0.2)' }}
+              aria-label="Buka keranjang"
+            >
+              <ShoppingBagIcon className="w-5 h-5" style={{ color: '#FFFAF4' }} />
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[9px] font-bold rounded-full"
+                  style={{ backgroundColor: '#C47C3A', color: '#FFFAF4', fontFamily: 'var(--font-label)' }}
+                >
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </motion.button>
+          )}
         </div>
+
+        {/* Location chip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mt-5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+          style={{ backgroundColor: 'rgba(255,250,244,0.1)', border: '1px solid rgba(255,250,244,0.15)' }}
+        >
+          <MapPinIcon className="w-3 h-3" style={{ color: 'rgba(232,213,176,0.7)' }} />
+          <span
+            className="text-[11px]"
+            style={{ color: 'rgba(232,213,176,0.7)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+          >
+            Sunter Jaya, Jakarta Utara
+          </span>
+        </motion.div>
       </section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════
-          VOLUME II — FEATURED COLLECTION
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-24 md:py-32 px-6 relative z-20" style={{ backgroundColor: '#1C1714' }}>
-        <div className="max-w-7xl mx-auto relative z-10">
+      {/* ─────────────────────────────────────────
+          CATEGORY PILLS
+      ───────────────────────────────────────── */}
+      <div
+        className="sticky top-0 z-30 border-b overflow-x-auto"
+        style={{
+          backgroundColor: '#FFFFFF',
+          borderColor: '#F0E6D6',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+        }}
+      >
+        <div className="flex items-center gap-2 px-5 py-2.5 w-max">
+          {CATEGORIES.map((cat, i) => (
+            <Link
+              key={cat.href}
+              to={cat.href}
+              prefetch="intent"
+              className="flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 whitespace-nowrap"
+              style={{
+                fontFamily: 'var(--font-body)',
+                backgroundColor: i === 0 ? '#6B3A1F' : 'transparent',
+                color: i === 0 ? '#FFFAF4' : '#6B3A1F',
+                border: `1.5px solid ${i === 0 ? '#6B3A1F' : '#E2CCB0'}`,
+              }}
+            >
+              {cat.label}
+            </Link>
+          ))}
+        </div>
+      </div>
 
-          {/* Section header */}
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="text-center mb-20 max-w-2xl mx-auto flex flex-col items-center"
-          >
-            <motion.div variants={fadeUpVariant} className="academia-label-row justify-center mx-auto mb-6">Volume II &nbsp;·&nbsp; Featured Collection</motion.div>
-            <motion.h2 variants={fadeUpVariant} className="text-4xl md:text-5xl italic text-center w-full" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}>
-              Curated Menu Selections
-            </motion.h2>
-            <motion.div variants={fadeUpVariant} className="ornate-divider mt-10 mx-auto w-64" />
+
+      {/* ─────────────────────────────────────────
+          FEATURED BANNER
+      ───────────────────────────────────────── */}
+      <div className="px-5 pt-5 pb-2">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link to="/products" className="block relative overflow-hidden rounded-2xl" style={{ aspectRatio: '2.5 / 1' }}>
+            <img
+              src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=85&w=900&auto=format&fit=crop"
+              alt="Menu LuDo-Chi"
+              className="w-full h-full object-cover"
+              style={{ objectPosition: 'center 40%' }}
+            />
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to right, rgba(30,16,6,0.82) 0%, rgba(30,16,6,0.2) 70%, transparent 100%)' }}
+            />
+            <div className="absolute inset-0 flex flex-col justify-center px-5 sm:px-7">
+              <p
+                className="text-[10px] tracking-[0.2em] uppercase mb-1.5"
+                style={{ color: 'rgba(232,213,176,0.75)', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+              >
+                Menu Terbaru
+              </p>
+              <h2
+                className="text-lg sm:text-xl leading-snug mb-3"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 600, color: '#FFFAF4' }}
+              >
+                Donat Lumer<br />Pilihan Hari Ini
+              </h2>
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-semibold self-start px-3 py-1.5 rounded-full"
+                style={{ backgroundColor: 'rgba(255,250,244,0.15)', color: '#FFFAF4', fontFamily: 'var(--font-label)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,250,244,0.25)' }}
+              >
+                Lihat Menu
+                <ArrowRightIcon className="w-3 h-3" />
+              </span>
+            </div>
+          </Link>
+        </motion.div>
+      </div>
+
+
+      {/* ─────────────────────────────────────────
+          PRODUCT GRID
+      ───────────────────────────────────────── */}
+      <section className="px-5 pt-6 pb-4">
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: '-30px' }}
+        >
+          <motion.div variants={fadeUp} className="flex items-center justify-between mb-4">
+            <h2
+              className="text-base font-semibold"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
+            >
+              Menu Pilihan
+            </h2>
+            <Link
+              to="/products"
+              className="flex items-center gap-1 text-xs font-semibold"
+              style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+            >
+              Lihat Semua <ArrowRightIcon className="w-3.5 h-3.5" />
+            </Link>
           </motion.div>
 
-          {/* Product grid */}
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12"
-          >
-            {products.map((product: any, index: number) => {
-              const thumbnail = product.thumbnail || 'https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=800&auto=format&fit=crop';
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {products.map((product: any) => {
+              const thumbnail = product.thumbnail ||
+                'https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=600&auto=format&fit=crop';
               const isNew = product.tags?.some((t: any) => t.value.toLowerCase() === 'new');
-              const volumeNums = ['I', 'II', 'III'];
 
               return (
-                <motion.div
-                  variants={fadeUpVariant}
-                  key={product.id}
-                  className="academia-card group flex flex-col overflow-hidden"
-                >
-                  {/* Image with arch-top */}
-                  <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                    <img
-                      src={thumbnail}
-                      alt={product.title}
-                      className="w-full h-full object-cover sepia-aged group-hover:scale-105 transition-transform duration-700"
-                    />
-                    {/* Badge */}
-                    <div
-                      className="absolute top-3 right-3 z-20 py-1 px-3"
-                      style={{
-                        fontFamily: 'var(--font-label)',
-                        fontSize: '0.55rem',
-                        letterSpacing: '0.2em',
-                        textTransform: 'uppercase',
-                        backgroundColor: isNew ? '#8B2635' : 'transparent',
-                        border: `1px solid ${isNew ? '#8B2635' : '#C9A962'}`,
-                        color: isNew ? '#E8DFD4' : '#C9A962',
-                      }}
-                    >
-                      {isNew ? 'New Edition' : 'Classic'}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-8 flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="academia-label mb-3 block">Vol. {volumeNums[index] || index + 1}</span>
-                      <h3
-                        className="text-2xl mb-3 leading-tight line-clamp-2 group-hover:text-[#C9A962] transition-colors duration-300"
-                        style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-                      >
-                        {product.title}
-                      </h3>
-                      {product.description && (
-                        <p
-                          className="italic text-sm mb-6 line-clamp-2 leading-relaxed"
-                          style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
+                <motion.div variants={fadeUp} key={product.id}>
+                  <Link
+                    to={`/products/${product.handle}`}
+                    className="group flex flex-col bg-white rounded-2xl overflow-hidden border active:scale-95 transition-transform duration-150"
+                    style={{ borderColor: '#F0E6D6' }}
+                  >
+                    <div className="relative overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
+                      <img
+                        src={thumbnail}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {isNew && (
+                        <span
+                          className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                          style={{ backgroundColor: '#6B3A1F', color: '#FFFAF4', fontFamily: 'var(--font-label)' }}
                         >
-                          {product.description}
-                        </p>
+                          Baru
+                        </span>
                       )}
                     </div>
-
-                    <div className="flex items-center justify-between mt-auto pt-6 border-t border-[#4A3F35]">
-                      <div className="flex flex-col">
-                        <span className="academia-label mb-1">Price</span>
-                        <div className="text-lg" style={{ fontFamily: 'var(--font-display)' }}>
-                          <ProductPrice product={product} currencyCode={region?.currency_code || 'idr'} />
-                        </div>
-                      </div>
-                      <Link
-                        to={`/products/${product.handle}`}
-                        className="inline-flex items-center gap-2 text-[#C9A962] hover:text-[#D4B872] transition-colors duration-200 underline underline-offset-4"
-                        style={{ fontFamily: 'var(--font-label)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase' }}
+                    <div className="p-3">
+                      <p
+                        className="text-sm leading-snug line-clamp-1 mb-0.5"
+                        style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
                       >
-                        View
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3" aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-                        </svg>
-                      </Link>
+                        {product.title}
+                      </p>
+                      <p
+                        className="text-xs font-semibold"
+                        style={{ color: '#C47C3A', fontFamily: 'var(--font-body)' }}
+                      >
+                        <ProductPrice product={product} currencyCode={region?.currency_code || 'idr'} />
+                      </p>
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               );
             })}
-          </motion.div>
-
-          {/* View all link */}
-          <div className="text-center mt-20">
-            <Link
-              to="/products"
-              className="text-xl italic hover:text-[#C9A962] transition-colors duration-300 border-b border-[#4A3F35] hover:border-[#C9A962] pb-1"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              Browse the Complete Catalogue
-            </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════
-          VOLUME III — THE MANUSCRIPT (ABOUT)
-      ═══════════════════════════════════════════════════════════════ */}
-      <section
-        className="py-24 md:py-32 px-6 border-t border-[#4A3F35]"
-        id="about"
-        style={{ backgroundColor: '#251E19' }}
-      >
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 lg:gap-24"
+      {/* ─────────────────────────────────────────
+          ABOUT BANNER — compact app card
+      ───────────────────────────────────────── */}
+      <section className="px-5 pt-4 pb-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-30px' }}
+          transition={{ duration: 0.5 }}
         >
-
-          {/* Left: Framed image */}
-          <motion.div variants={fadeUpVariant} className="w-full lg:w-1/2 ornate-frame p-4" style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}>
-            <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/5', border: '1px solid #4A3F35' }}>
+          <div
+            className="rounded-2xl overflow-hidden flex flex-col sm:flex-row"
+            style={{ backgroundColor: '#FFF3E4', border: '1.5px solid #E2CCB0' }}
+          >
+            <div className="sm:w-2/5 overflow-hidden" style={{ aspectRatio: '16/7', flexShrink: 0 }}>
               <img
-                src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?q=80&w=1200&auto=format&fit=crop"
-                alt="LuDoChi bakery kitchen — handcrafting mochi bread daily"
-                className="w-full h-full object-cover sepia-aged"
+                src="https://images.unsplash.com/photo-1590080876351-41f7d8f46476?q=80&w=800&auto=format&fit=crop"
+                alt="LuDo-Chi dapur"
+                className="w-full h-full object-cover"
               />
             </div>
-            <p
-              className="text-center italic text-sm mt-4"
-              style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
-            >
-              Fig. 2 — The Main Kitchen, LuDoChi
-            </p>
-          </motion.div>
-
-          {/* Right: Text */}
-          <motion.div variants={fadeUpVariant} className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
-            <span className="academia-label mb-8">Volume III &nbsp;·&nbsp; Our Story</span>
-
-            <h2
-              className="text-4xl md:text-5xl mb-8 leading-tight"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
-            >
-              Made with Love,<br className="hidden lg:block" />
-              <em>Served with Passion.</em>
-            </h2>
-
-            <div className="ornate-divider w-48 mb-8 mx-0" />
-
-            <p
-              className="text-lg italic leading-relaxed mb-6 drop-cap"
-              style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.85)' }}
-            >
-              "We believe every perfect bite can turn an ordinary day into something
-              special. LuDoChi was born from the passion to bring premium quality
-              homemade donuts and pillowy mochi — accessible to everyone."
-            </p>
-
-            <p
-              className="text-lg leading-relaxed mb-12"
-              style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.75)' }}
-            >
-              Each product is crafted with quality ingredients, free from artificial
-              preservatives, and always made fresh daily. Enjoy it in-store,
-              take it away, or order via our website and favourite marketplaces.
-            </p>
-
-            {/* Stats */}
-            <div
-              className="flex items-center gap-12 pt-8 w-full justify-center lg:justify-start border-t border-[#4A3F35]"
-            >
-              <div className="text-center lg:text-left">
-                <p
-                  className="text-4xl"
-                  style={{ fontFamily: 'var(--font-display)', color: '#C9A962' }}
-                >
-                  10K+
-                </p>
-                <p className="academia-label mt-2">Happy Patrons</p>
-              </div>
-              <div className="w-px h-16 bg-[#4A3F35]" />
-              <div className="text-center lg:text-left">
-                <p
-                  className="text-4xl italic"
-                  style={{ fontFamily: 'var(--font-display)', color: '#C9A962' }}
-                >
-                  Pure
-                </p>
-                <p className="academia-label mt-2">Handcrafted Daily</p>
-              </div>
-            </div>
-          </motion.div>
-
-        </motion.div>
-      </section>
-
-
-      {/* ═══════════════════════════════════════════════════════════════
-          VOLUME IV — PRINCIPLES & VALUES
-      ═══════════════════════════════════════════════════════════════ */}
-      <section
-        className="py-32 px-6 border-t border-b border-[#4A3F35]"
-        id="features"
-        style={{ backgroundColor: '#1C1714', color: '#E8DFD4' }}
-      >
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="max-w-7xl mx-auto"
-        >
-          <motion.div variants={fadeUpVariant} className="text-center mb-24 max-w-2xl mx-auto border-b border-[#4A3F35] pb-12 flex flex-col items-center">
-            <div className="academia-label-row justify-center mx-auto mb-6">Volume IV &nbsp;·&nbsp; Pillars of Excellence</div>
-            <h2
-              className="text-4xl md:text-5xl italic text-center w-full"
-              style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
-            >
-              Our Principles &amp; Craft
-            </h2>
-          </motion.div>
-
-          <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
-            {[
-              {
-                num: 'I',
-                title: 'Premium Ingredients',
-                body: 'Every LuDoChi product is made from carefully selected high-quality ingredients — premium flour, finest chocolate, and fresh fillings chosen to ensure the best flavour in every single bite.',
-              },
-              {
-                num: 'II',
-                title: 'Always Fresh',
-                body: 'No artificial preservatives — always made fresh every day. Our lumer donuts and pillowy mochi are prepared with full dedication so they reach you in their best condition.',
-              },
-              {
-                num: 'III',
-                title: 'Accessible & Cozy',
-                body: 'Premium does not mean exclusive. LuDoChi is here for everyone who wants quality products in a cozy aesthetic café setting — dine-in, take away, or delivery.',
-              },
-              {
-                num: 'IV',
-                title: '100% Halal',
-                body: 'All LuDoChi products are guaranteed 100% Halal, using safe and certified ingredients, giving complete peace of mind to every customer who enjoys our products.',
-              },
-            ].map((item, i) => (
-              <motion.div
-                variants={fadeUpVariant}
-                key={item.num}
-                className={`flex flex-col relative pr-6${i < 3 ? ' before:hidden lg:before:block before:absolute before:-right-6 before:top-0 before:h-full before:w-px before:bg-[#4A3F35]' : ''}`}
+            <div className="p-5 flex flex-col justify-center gap-3 sm:w-3/5">
+              <p
+                className="text-[10px] tracking-[0.2em] uppercase"
+                style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
               >
-                <span className="academia-label mb-2">{item.num}</span>
-                <h3
-                  className="text-2xl mb-4"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: '#E8DFD4' }}
-                >
-                  {item.title}
-                </h3>
-                <p className="leading-relaxed" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
-                  {item.body}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
+                Tentang Kami
+              </p>
+              <h3
+                className="text-lg leading-snug"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+              >
+                Dibuat Fresh,<br />Setiap Hari.
+              </h3>
+              <p
+                className="text-xs leading-relaxed"
+                style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}
+              >
+                Donat lumer &amp; mochi pillow dari bahan pilihan,
+                tanpa pengawet — selalu hadir untuk kamu.
+              </p>
+              <Link
+                to="/about-us"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold self-start"
+                style={{ color: '#6B3A1F', fontFamily: 'var(--font-label)' }}
+              >
+                Selengkapnya <ArrowRightIcon className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════
-          EPILOGUE — VISIT & CONTACT
-      ═══════════════════════════════════════════════════════════════ */}
-      <section
-        className="py-24 md:py-32 px-6"
-        style={{ backgroundColor: '#251E19', color: '#E8DFD4' }}
-      >
-        <motion.div 
-          variants={staggerContainer}
+      {/* ─────────────────────────────────────────
+          INFO ROW — jam, lokasi, kontak
+      ───────────────────────────────────────── */}
+      <section className="px-5 pt-4 pb-8">
+        <motion.div
+          variants={stagger}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="max-w-7xl mx-auto border border-[#4A3F35] p-2 md:p-4"
+          viewport={{ once: true, margin: '-30px' }}
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3"
         >
-          <div className="ornate-frame border border-[#4A3F35] p-8 md:p-16">
-
-            {/* Header */}
-            <motion.div variants={fadeUpVariant} className="flex flex-col lg:flex-row justify-between items-start gap-12 pb-16 mb-16 border-b border-[#4A3F35]">
-              <div className="max-w-xl">
-                <span className="academia-label mb-6 block">Epilogue</span>
-                <h2
-                  className="text-4xl md:text-5xl lg:text-7xl italic leading-tight mb-6"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400 }}
+          {[
+            {
+              label: 'Jam Buka',
+              value: '09:00 – 22:00',
+              sub: 'Buka setiap hari',
+              href: null,
+            },
+            {
+              label: 'Lokasi',
+              value: 'Sunter Jaya',
+              sub: 'Jakarta Utara',
+              href: 'https://maps.google.com',
+            },
+            {
+              label: 'Kontak',
+              value: '@ludochi.id',
+              sub: 'order@ludochi.id',
+              href: 'https://instagram.com/ludochi.id',
+            },
+          ].map((item) => (
+            <motion.div
+              variants={fadeUp}
+              key={item.label}
+            >
+              {item.href ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 border transition-opacity hover:opacity-75"
+                  style={{ borderColor: '#F0E6D6' }}
                 >
-                  Visit &amp; Savor the Distinction.
-                </h2>
-                <p
-                  className="text-lg leading-relaxed"
-                  style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
-                >
-                  Looking to order in bulk, a special bundling, or just want to say hello?
-                  We're ready to serve you through all channels — from our website, marketplace,
-                  to visiting us directly at our Jakarta location.
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Info columns */}
-            <motion.div variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-12">
-
-              {/* Hours */}
-              <motion.div variants={fadeUpVariant} className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
-                <h3 className="academia-label mb-6">I. &nbsp;Hours of Operation</h3>
-                <div className="space-y-4" style={{ fontFamily: 'var(--font-body)' }}>
-                  <div className="flex justify-between border-b border-[#4A3F35] pb-2">
-                    <span className="italic">Monday – Sunday</span>
-                    <span>09:00 – 22:00</span>
+                  <div>
+                    <p className="text-[10px] ludo-label mb-0.5">{item.label}</p>
+                    <p className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}>{item.value}</p>
+                    <p className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>{item.sub}</p>
                   </div>
-                  <div className="flex justify-between border-b border-[#4A3F35] pb-2">
-                    <span className="italic">Public Holidays</span>
-                    <span>09:00 – 22:00</span>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Location */}
-              <motion.div variants={fadeUpVariant} className="md:border-r border-[#4A3F35] last:border-0 pr-8 last:pr-0">
-                <h3 className="academia-label mb-6">II. &nbsp;Our Location</h3>
-                <div style={{ fontFamily: 'var(--font-body)' }}>
-                  <p className="leading-relaxed mb-4" style={{ color: '#E8DFD4' }}>
-                    Jl. H. Mawar No.51, RT.3/RW.3, Sunter Jaya,<br />Kec. Tj. Priok, Jkt Utara, DKI Jakarta 14350
-                  </p>
-                  <a
-                    href="https://maps.google.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="italic hover:text-[#C9A962] transition-colors duration-200 border-b border-[#4A3F35] hover:border-[#C9A962] pb-0.5"
-                    style={{ fontSize: '0.8rem', letterSpacing: '0.1em', color: '#9C8B7A' }}
-                  >
-                    Navigate via Maps →
-                  </a>
-                </div>
-              </motion.div>
-
-              {/* Contact */}
-              <motion.div variants={fadeUpVariant}>
-                <h3 className="academia-label mb-6">III. &nbsp;Correspondence</h3>
+                  <ArrowRightIcon className="w-4 h-4 flex-shrink-0" style={{ color: '#C47C3A' }} />
+                </a>
+              ) : (
                 <div
-                  className="flex flex-col gap-3"
-                  style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}
+                  className="flex items-center justify-between bg-white rounded-2xl px-4 py-3.5 border"
+                  style={{ borderColor: '#F0E6D6' }}
                 >
-                  <a href="mailto:hello@ludochi.com" className="hover:text-[#C9A962] hover:italic transition-all duration-200">
-                    order@ludochi.id
-                  </a>
-                  <a href="https://instagram.com" className="hover:text-[#C9A962] hover:italic transition-all duration-200">
-                    @ludochi.id
-                  </a>
-                  <a href="tel:+628111234567" className="hover:text-[#C9A962] hover:italic transition-all duration-200">
-                    +62-811-2222-3333
-                  </a>
+                  <div>
+                    <p className="text-[10px] ludo-label mb-0.5">{item.label}</p>
+                    <p className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}>{item.value}</p>
+                    <p className="text-xs" style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}>{item.sub}</p>
+                  </div>
                 </div>
-              </motion.div>
-
+              )}
             </motion.div>
-          </div>
+          ))}
         </motion.div>
       </section>
 

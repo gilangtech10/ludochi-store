@@ -18,51 +18,70 @@ export const CartDrawerItem: FC<CartDrawerItemProps> = ({ item, currencyCode, is
 
   return (
     <li
-      key={item.id}
-      className={clsx('flex h-36 py-6 opacity-100 transition-all', {
-        '!h-0 !p-0 !opacity-0': isRemoving,
-      })}
+      className={clsx(
+        'flex gap-4 px-5 py-4 transition-all duration-300 overflow-hidden',
+        isRemoving ? 'opacity-0 max-h-0 py-0' : 'opacity-100 max-h-40',
+      )}
     >
+      {/* Product image */}
       <div
-        className="h-24 w-24 flex-shrink-0 overflow-hidden"
-        style={{ backgroundColor: '#1C1714', border: '1px solid #4A3F35' }}
+        className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0"
+        style={{ backgroundColor: '#FFF3E4', border: '1.5px solid #F0E6D6' }}
       >
         <Image
           src={item.variant?.product?.thumbnail || ''}
           alt={item.product_title || 'product thumbnail'}
-          className="h-full w-full object-cover object-center sepia-aged"
+          className="h-full w-full object-cover object-center"
         />
       </div>
 
-      <div className="ml-5 flex flex-1 flex-col">
-        <div>
-          <div className="flex items-start justify-between">
-            <div>
-              <h3
-                className="leading-tight"
-                style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.1rem', color: '#E8DFD4' }}
+      {/* Product info */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h3
+              className="text-sm leading-snug line-clamp-2"
+              style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#3D2B1F' }}
+            >
+              {item.product_title}
+            </h3>
+            {item.variant_title && (
+              <p
+                className="text-xs mt-0.5"
+                style={{ color: '#9C8070', fontFamily: 'var(--font-body)', fontWeight: 300 }}
               >
-                {item.product_title}
-              </h3>
-              <p className="mt-1 italic text-sm" style={{ fontFamily: 'var(--font-body)', color: '#9C8B7A' }}>
                 {item.variant_title}
               </p>
-            </div>
-            <Button
-              variant="link"
-              onClick={handleRemoveFromCart}
-              disabled={isRemoving}
-              className="!p-0 transition-colors"
-              style={{ fontFamily: 'var(--font-label)', fontSize: '0.55rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#9C8B7A' }}
-            >
-              {isRemoving ? 'Removing…' : 'Remove'}
-            </Button>
+            )}
           </div>
+          <button
+            onClick={handleRemoveFromCart}
+            disabled={isRemoving}
+            className="flex-shrink-0 text-[10px] font-semibold tracking-wider uppercase transition-opacity hover:opacity-60 disabled:opacity-40 mt-0.5"
+            style={{ color: '#C4A882', fontFamily: 'var(--font-label)' }}
+            aria-label="Hapus dari keranjang"
+          >
+            {isRemoving ? '...' : 'Hapus'}
+          </button>
         </div>
-        <div className="flex-1" />
-        <div className="flex items-end justify-between pt-2 mt-2" style={{ borderTop: '1px solid rgba(74,63,53,0.4)' }}>
-          <span className="academia-label">Qty {item.quantity}</span>
-          <p style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.05rem', color: '#C9A962' }}>
+
+        {/* Quantity & price row */}
+        <div className="mt-auto flex items-center justify-between pt-2">
+          <div
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full"
+            style={{ backgroundColor: '#FFF3E4', border: '1px solid #F0E6D6' }}
+          >
+            <span
+              className="text-[11px] font-semibold"
+              style={{ color: '#6B3A1F', fontFamily: 'var(--font-label)' }}
+            >
+              ×{item.quantity}
+            </span>
+          </div>
+          <p
+            className="text-base font-medium"
+            style={{ fontFamily: 'var(--font-display)', fontWeight: 500, color: '#C47C3A' }}
+          >
             {formatLineItemPrice(item, currencyCode)}
           </p>
         </div>

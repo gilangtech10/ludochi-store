@@ -1,9 +1,10 @@
 import { CartDrawer } from '@app/components/cart/CartDrawer';
-import { WhatsAppButton } from '@app/components/common/WhatsAppButton/WhatsAppButton';
 import clsx from 'clsx';
 import type { FC, ReactNode } from 'react';
+import { BottomNav } from './BottomNav';
 import { Footer } from './footer/Footer';
 import { Header } from './header/Header';
+
 export interface PageProps {
   className?: string;
   children: ReactNode;
@@ -11,14 +12,14 @@ export interface PageProps {
 
 export const Page: FC<PageProps> = ({ className, children }) => {
   return (
-    <div className={clsx('page-layout flex min-h-screen flex-col bg-highlight-50', className)}>
+    <div className={clsx('page-layout flex min-h-screen flex-col', className)} style={{ backgroundColor: '#FFFAF4' }}>
       <CartDrawer />
       <Header />
-      <main className="flex-auto">
+      <main className="flex-auto pb-16 md:pb-0">
         <div className="w-full">{children}</div>
       </main>
-      <Footer />
-      <WhatsAppButton />
+      <div className="hidden md:block"><Footer /></div>
+      <BottomNav />
     </div>
   );
 };
