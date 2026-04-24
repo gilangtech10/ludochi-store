@@ -43,6 +43,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (sort === 'name_asc') order = 'title';
   else if (sort === 'name_desc') order = '-title';
   else if (sort === 'newest') order = '-created_at';
+  else if (sort === 'oldest') order = 'created_at';
 
   const { products, count } = await fetchProducts(request, {
     q,
@@ -55,16 +56,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return { products, count, limit, offset, q: q ?? null, activeCategory, categoryHandle: categoryHandle ?? null, sort: sort ?? null };
 };
 
-type SortValue = 'newest' | 'name_asc' | 'name_desc';
+type SortValue = 'newest' | 'oldest' | 'name_asc' | 'name_desc';
 
 const SORT_OPTIONS: { label: string; value: SortValue }[] = [
   { label: 'Terbaru', value: 'newest' },
+  { label: 'Terlama', value: 'oldest' },
   { label: 'Nama A-Z', value: 'name_asc' },
   { label: 'Nama Z-A', value: 'name_desc' },
 ];
 
 const SORT_LABEL_MAP: Record<string, string> = {
   newest: 'Terbaru',
+  oldest: 'Terlama',
   name_asc: 'Nama A-Z',
   name_desc: 'Nama Z-A',
 };
