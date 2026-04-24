@@ -35,12 +35,12 @@ export const BottomNav = () => {
       className="md:hidden fixed bottom-0 left-0 right-0 z-50"
       style={{
         backgroundColor: '#FFFFFF',
-        borderTop: '1.5px solid #E2CCB0',
+        borderTop: '1px solid rgba(226,204,176,0.6)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        boxShadow: '0 -4px 20px rgba(61,43,31,0.08)',
+        boxShadow: '0 -2px 16px rgba(61,43,31,0.06)',
       }}
     >
-      <div className="flex items-stretch h-16">
+      <div className="flex items-stretch h-[60px]">
         {NAV_ITEMS.map((item) => {
           const isCart = item.href === null;
 
@@ -52,40 +52,40 @@ export const BottomNav = () => {
               : location.pathname.startsWith(item.href!)
           );
 
-          const Icon       = isActive ? item.activeIcon : item.icon;
+          const Icon = isActive ? item.activeIcon : item.icon;
           const labelColor = isActive ? '#6B3A1F' : '#9C8070';
-          const iconColor  = isActive ? '#6B3A1F' : '#9C8070';
+          const iconColor = isActive ? '#6B3A1F' : '#9C8070';
 
           const inner = (
             <>
               <div className="relative">
-                <Icon className="w-[22px] h-[22px]" style={{ color: iconColor }} />
+                <Icon className="w-5 h-5" style={{ color: iconColor }} />
                 {isCart && cartCount > 0 && (
                   <span
-                    className="absolute -top-1 -right-1.5 min-w-[16px] h-4 flex items-center justify-center px-1 text-[9px] font-bold rounded-full"
-                    style={{ backgroundColor: '#6B3A1F', color: '#FFFAF4', fontFamily: 'var(--font-label)' }}
+                    className="absolute -top-1.5 -right-2 min-w-[16px] h-4 flex items-center justify-center px-1 text-[9px] font-bold rounded-full"
+                    style={{ backgroundColor: '#C47C3A', color: '#FFFFFF', fontFamily: 'var(--font-label)' }}
                   >
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </div>
               <span
-                className="text-[10px] font-bold mt-1 tracking-wide"
+                className="text-[10px] font-bold mt-0.5 tracking-wide"
                 style={{ color: labelColor, fontFamily: 'var(--font-label)' }}
               >
                 {item.label}
               </span>
               {isActive && (
                 <span
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[2.5px] rounded-b-full"
-                  style={{ backgroundColor: '#6B3A1F' }}
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-[2px] rounded-b-full"
+                  style={{ backgroundColor: '#C47C3A' }}
                 />
               )}
             </>
           );
 
           const baseClass = clsx(
-            'relative flex-1 flex flex-col items-center justify-center gap-0 transition-colors duration-200',
+            'relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:opacity-60',
           );
 
           if (isCart) {

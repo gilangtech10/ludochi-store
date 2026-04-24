@@ -33,7 +33,7 @@ export const ProductGrid: FC<ProductListProps> = ({
   heading,
   actions,
   products,
-  className = 'grid grid-cols-1 gap-y-6 @md:grid-cols-2 gap-x-4 @2xl:!grid-cols-3 @4xl:!grid-cols-4 @4xl:gap-x-4',
+  className = 'grid grid-cols-2 gap-3 @md:grid-cols-3 @lg:grid-cols-4 md:gap-4',
   disableAnimation = false,
 }) => {
   const navigation = useNavigation();

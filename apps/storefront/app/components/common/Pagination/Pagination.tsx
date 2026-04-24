@@ -143,10 +143,39 @@ export const Pagination: FC<PaginationProps> = ({
   const startPage = totalPages <= 5 ? 1 : Math.max(1, currentPage - 1);
   const endPage = totalPages <= 5 ? totalPages : Math.min(totalPages, currentPage + 1);
 
+  const hasNextPage = currentPage < totalPages;
+
   return (
     <div className="mt-8 pt-6 border-t" style={{ borderColor: '#F0E6D6' }}>
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* ── Mobile: Load More ── */}
+      <div className="md:hidden">
+        {hasNextPage ? (
+          <Link
+            viewTransition
+            to={getNextProps({ currentPage }).href}
+            prefetch="viewport"
+            className="flex items-center justify-center w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 active:scale-[0.98] active:shadow-inner"
+            style={{
+              backgroundColor: '#6B3A1F',
+              color: '#FFFAF4',
+              fontFamily: 'var(--font-label)',
+              boxShadow: '0 4px 14px rgba(107,58,31,0.25)',
+            }}
+          >
+            Muat Lebih Banyak
+          </Link>
+        ) : (
+          <p
+            className="text-center text-xs py-2"
+            style={{ color: '#9C8070', fontFamily: 'var(--font-body)' }}
+          >
+            Sudah menampilkan semua produk
+          </p>
+        )}
+      </div>
 
+      {/* ── Desktop: Full Pagination ── */}
+      <div className="hidden md:flex flex-row items-center justify-between gap-4">
         {/* Count */}
         <p
           style={{
