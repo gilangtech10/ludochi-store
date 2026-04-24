@@ -74,9 +74,19 @@
     font-family: var(--font-body);
   }
 
-  /* Remove default browser focus outline & search input chrome */
+  /* Remove default browser focus outline */
   input:focus, button:focus, textarea:focus, select:focus {
     outline: none;
+  }
+
+  /* Strip all default browser chrome from search inputs */
+  input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
   }
 
   input[type="search"]::-webkit-search-decoration,

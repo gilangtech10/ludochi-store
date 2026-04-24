@@ -198,9 +198,10 @@ export default function ProductsIndexRoute() {
           ═══════════════════════════════════════════ */}
       <div className="md:hidden px-4 pt-2.5 pb-2">
         <Form method="get" action="/products">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            {/* Search field */}
             <div
-              className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2 transition-all duration-200 focus-within:border-[#C4A882] focus-within:shadow-[0_2px_8px_rgba(196,124,58,0.12)]"
+              className="flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 py-[6px]"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
@@ -209,11 +210,11 @@ export default function ProductsIndexRoute() {
             >
               {isSearching ? (
                 <div
-                  className="w-4 h-4 rounded-full border-[1.5px] border-t-transparent animate-spin flex-shrink-0"
+                  className="w-3.5 h-3.5 rounded-full border-[1.5px] border-t-transparent animate-spin shrink-0"
                   style={{ borderColor: '#C4A882', borderTopColor: 'transparent' }}
                 />
               ) : (
-                <MagnifyingGlassIcon className="w-4 h-4 flex-shrink-0" style={{ color: '#9C8070' }} />
+                <MagnifyingGlassIcon className="w-3.5 h-3.5 shrink-0" style={{ color: '#9C8070' }} />
               )}
               <input
                 ref={inputRef}
@@ -222,15 +223,19 @@ export default function ProductsIndexRoute() {
                 defaultValue={q ?? ''}
                 placeholder="Cari menu…"
                 autoComplete="off"
-                className="flex-1 bg-transparent outline-none ring-0 text-xs min-w-0 placeholder:text-[#C4A882]"
-                style={{ color: '#3D2B1F', fontFamily: 'var(--font-body)', fontWeight: 400, WebkitAppearance: 'none' }}
+                className="flex-1 min-w-0 bg-transparent text-xs placeholder:text-[#C4A882] appearance-none border-none outline-none ring-0 shadow-none rounded-none"
+                style={{
+                  color: '#3D2B1F',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 400,
+                }}
               />
               {q && (
                 <Link
                   to="/products"
                   replace
                   aria-label="Hapus pencarian"
-                  className="flex-shrink-0 p-0.5 rounded-full transition-opacity hover:opacity-70"
+                  className="shrink-0 p-0.5"
                 >
                   <XMarkIcon className="w-3.5 h-3.5" style={{ color: '#9C8070' }} />
                 </Link>
@@ -241,7 +246,7 @@ export default function ProductsIndexRoute() {
             <button
               type="button"
               onClick={() => setShowFilters((s) => !s)}
-              className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 active:bg-[#F0E6D6] active:scale-95"
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center active:scale-95"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
