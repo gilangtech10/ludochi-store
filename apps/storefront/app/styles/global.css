@@ -63,12 +63,27 @@
     --mkt-header-height-desktop: 64px;
   }
 
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
 
   html {
     background-color: var(--ludo-bg);
     color: var(--ludo-brown);
     font-family: var(--font-body);
+  }
+
+  /* Remove default browser focus outline & search input chrome */
+  input:focus, button:focus, textarea:focus, select:focus {
+    outline: none;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    display: none;
   }
 
   h1, h2, h3, h4, h5, h6 {

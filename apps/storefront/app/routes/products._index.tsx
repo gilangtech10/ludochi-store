@@ -153,7 +153,7 @@ export default function ProductsIndexRoute() {
           <motion.div variants={fadeUp} className="max-w-md">
             <Form method="get" action="/products" className="relative">
               <div
-                className="flex items-center gap-2 rounded-xl px-4 py-2.5"
+                className="flex items-center gap-2 rounded-xl px-4 py-2.5 transition-all duration-200 focus-within:bg-[rgba(255,250,244,0.18)] focus-within:border-[rgba(255,250,244,0.35)]"
                 style={{ backgroundColor: 'rgba(255,250,244,0.12)', border: '1.5px solid rgba(255,250,244,0.2)' }}
               >
                 {isSearching ? (
@@ -174,7 +174,7 @@ export default function ProductsIndexRoute() {
                   defaultValue={q ?? ''}
                   placeholder="Cari donat, mochi, minuman…"
                   autoComplete="off"
-                  className="flex-1 bg-transparent outline-none text-sm min-w-0"
+                  className="flex-1 bg-transparent outline-none ring-0 text-sm min-w-0"
                   style={{ color: '#FFFAF4', fontFamily: 'var(--font-body)', fontWeight: 300 }}
                 />
                 {q && (
@@ -200,7 +200,7 @@ export default function ProductsIndexRoute() {
         <Form method="get" action="/products">
           <div className="flex items-center gap-2">
             <div
-              className="flex-1 flex items-center gap-2 rounded-lg px-3 py-[7px] transition-shadow focus-within:shadow-sm"
+              className="flex-1 flex items-center gap-2 rounded-xl px-3 py-2 transition-all duration-200 focus-within:border-[#C4A882] focus-within:shadow-[0_2px_8px_rgba(196,124,58,0.12)]"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
@@ -222,8 +222,8 @@ export default function ProductsIndexRoute() {
                 defaultValue={q ?? ''}
                 placeholder="Cari menu…"
                 autoComplete="off"
-                className="flex-1 bg-transparent outline-none text-xs min-w-0 placeholder:text-[#C4A882]"
-                style={{ color: '#3D2B1F', fontFamily: 'var(--font-body)', fontWeight: 400 }}
+                className="flex-1 bg-transparent outline-none ring-0 text-xs min-w-0 placeholder:text-[#C4A882]"
+                style={{ color: '#3D2B1F', fontFamily: 'var(--font-body)', fontWeight: 400, WebkitAppearance: 'none' }}
               />
               {q && (
                 <Link
@@ -241,7 +241,7 @@ export default function ProductsIndexRoute() {
             <button
               type="button"
               onClick={() => setShowFilters((s) => !s)}
-              className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors active:bg-[#F0E6D6]"
+              className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 active:bg-[#F0E6D6] active:scale-95"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
