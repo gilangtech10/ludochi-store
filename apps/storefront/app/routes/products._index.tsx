@@ -196,33 +196,33 @@ export default function ProductsIndexRoute() {
       {/* ═══════════════════════════════════════════
           MOBILE SEARCH BAR
           ═══════════════════════════════════════════ */}
-      <div className="md:hidden px-4 pt-3 pb-2">
+      <div className="md:hidden px-4 pt-2.5 pb-2">
         <Form method="get" action="/products">
           <div className="flex items-center gap-2">
             <div
-              className="flex-1 flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 transition-shadow focus-within:shadow-md"
+              className="flex-1 flex items-center gap-2 rounded-lg px-3 py-[7px] transition-shadow focus-within:shadow-sm"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
-                boxShadow: '0 1px 6px rgba(61,43,31,0.04)',
+                boxShadow: '0 1px 4px rgba(61,43,31,0.04)',
               }}
             >
               {isSearching ? (
                 <div
-                  className="w-[18px] h-[18px] rounded-full border-[1.5px] border-t-transparent animate-spin flex-shrink-0"
+                  className="w-4 h-4 rounded-full border-[1.5px] border-t-transparent animate-spin flex-shrink-0"
                   style={{ borderColor: '#C4A882', borderTopColor: 'transparent' }}
                 />
               ) : (
-                <MagnifyingGlassIcon className="w-[18px] h-[18px] flex-shrink-0" style={{ color: '#9C8070' }} />
+                <MagnifyingGlassIcon className="w-4 h-4 flex-shrink-0" style={{ color: '#9C8070' }} />
               )}
               <input
                 ref={inputRef}
                 name="q"
                 type="search"
                 defaultValue={q ?? ''}
-                placeholder="Cari menu favoritmu…"
+                placeholder="Cari menu…"
                 autoComplete="off"
-                className="flex-1 bg-transparent outline-none text-[13px] min-w-0 placeholder:text-[#C4A882]"
+                className="flex-1 bg-transparent outline-none text-xs min-w-0 placeholder:text-[#C4A882]"
                 style={{ color: '#3D2B1F', fontFamily: 'var(--font-body)', fontWeight: 400 }}
               />
               {q && (
@@ -232,7 +232,7 @@ export default function ProductsIndexRoute() {
                   aria-label="Hapus pencarian"
                   className="flex-shrink-0 p-0.5 rounded-full transition-opacity hover:opacity-70"
                 >
-                  <XMarkIcon className="w-4 h-4" style={{ color: '#9C8070' }} />
+                  <XMarkIcon className="w-3.5 h-3.5" style={{ color: '#9C8070' }} />
                 </Link>
               )}
             </div>
@@ -241,15 +241,15 @@ export default function ProductsIndexRoute() {
             <button
               type="button"
               onClick={() => setShowFilters((s) => !s)}
-              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors active:bg-[#F0E6D6]"
+              className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors active:bg-[#F0E6D6]"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
-                boxShadow: '0 1px 6px rgba(61,43,31,0.04)',
+                boxShadow: '0 1px 4px rgba(61,43,31,0.04)',
               }}
               aria-label="Filter"
             >
-              <FunnelIcon className="w-[18px] h-[18px]" style={{ color: '#6B3A1F' }} />
+              <FunnelIcon className="w-4 h-4" style={{ color: '#6B3A1F' }} />
             </button>
           </div>
         </Form>
