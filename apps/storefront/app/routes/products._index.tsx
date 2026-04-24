@@ -263,7 +263,7 @@ export default function ProductsIndexRoute() {
           <div className="flex items-center gap-1.5 min-w-0">
             {/* Search field */}
             <div
-              className="flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 py-[6px]"
+              className="flex-1 min-w-0 flex items-center gap-1.5 rounded-xl px-2.5 h-9"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
