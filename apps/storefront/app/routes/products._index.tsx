@@ -3,8 +3,8 @@ import { fetchProducts } from '@libs/util/server/products.server';
 import { listCategories } from '@libs/util/server/data/categories.server';
 import { LoaderFunctionArgs } from 'react-router';
 import { Form, useLoaderData, Link, useLocation, useNavigation } from 'react-router';
-import { motion, Variants } from 'framer-motion';
-import { MagnifyingGlassIcon, XMarkIcon, ShoppingBagIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { motion, Variants, AnimatePresence } from 'framer-motion';
+import { MagnifyingGlassIcon, XMarkIcon, ShoppingBagIcon, FunnelIcon, BarsArrowUpIcon } from '@heroicons/react/24/outline';
 import type { MetaFunction } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useCart } from '@app/hooks/useCart';
@@ -22,6 +22,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const q = url.searchParams.get('q')?.trim() || undefined;
   const categoryHandle = url.searchParams.get('category')?.trim() || undefined;
+  const sort = url.searchParams.get('sort')?.trim() || undefined;
   const page = Number(url.searchParams.get('page') ?? 1);
   const limit = 12;
   const offset = (page - 1) * limit;
@@ -38,14 +39,37 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
   }
 
+  let order: string | undefined;
+  if (sort === 'price_asc') order = 'variants.prices.amount';
+  else if (sort === 'price_desc') order = '-variants.prices.amount';
+  else if (sort === 'name_asc') order = 'title';
+  else if (sort === 'newest') order = '-created_at';
+
   const { products, count } = await fetchProducts(request, {
     q,
     category_id: categoryId,
+    order,
     limit,
     offset,
   });
 
-  return { products, count, limit, offset, q: q ?? null, activeCategory, categoryHandle: categoryHandle ?? null };
+  return { products, count, limit, offset, q: q ?? null, activeCategory, categoryHandle: categoryHandle ?? null, sort: sort ?? null };
+};
+
+type SortValue = 'newest' | 'price_asc' | 'price_desc' | 'name_asc';
+
+const SORT_OPTIONS: { label: string; value: SortValue }[] = [
+  { label: 'Terbaru', value: 'newest' },
+  { label: 'Harga Terendah', value: 'price_asc' },
+  { label: 'Harga Tertinggi', value: 'price_desc' },
+  { label: 'Nama A-Z', value: 'name_asc' },
+];
+
+const SORT_LABEL_MAP: Record<string, string> = {
+  newest: 'Terbaru',
+  price_asc: 'Harga Terendah',
+  price_desc: 'Harga Tertinggi',
+  name_asc: 'Nama A-Z',
 };
 
 export type ProductsIndexRouteLoader = typeof loader;
@@ -69,17 +93,32 @@ const CATEGORIES = [
 ];
 
 export default function ProductsIndexRoute() {
-  const { products, count, limit, offset, q, activeCategory, categoryHandle } = useLoaderData<ProductsIndexRouteLoader>();
+  const { products, count, limit, offset, q, activeCategory, categoryHandle, sort } = useLoaderData<ProductsIndexRouteLoader>();
   const location = useLocation();
   const navigation = useNavigation();
   const inputRef = useRef<HTMLInputElement>(null);
   const { cart, toggleCartDrawer } = useCart();
-  const [showFilters, setShowFilters] = useState(false);
+  const [showSortSheet, setShowSortSheet] = useState(false);
 
   const cartCount = cart?.items?.reduce((acc: number, item: any) => acc + item.quantity, 0) ?? 0;
 
   const isSearching = navigation.state === 'loading' && !!navigation.location?.search?.includes('q=');
   const isLoadingProducts = navigation.state === 'loading' && !isSearching;
+
+  const activeSortLabel = sort ? SORT_LABEL_MAP[sort] : null;
+
+  // Build sort link preserving other params
+  const buildSortHref = (sortValue: SortValue | null) => {
+    const params = new URLSearchParams(location.search);
+    if (sortValue) {
+      params.set('sort', sortValue);
+    } else {
+      params.delete('sort');
+    }
+    params.delete('page');
+    const qs = params.toString();
+    return `/products${qs ? `?${qs}` : ''}`;
+  };
 
   // Sync input value when navigating back/forward
   useEffect(() => {
@@ -265,19 +304,22 @@ export default function ProductsIndexRoute() {
               )}
             </div>
 
-            {/* Filter button (mobile) */}
+            {/* Sort button (mobile) */}
             <button
               type="button"
-              onClick={() => setShowFilters((s) => !s)}
-              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center active:scale-95"
+              onClick={() => setShowSortSheet(true)}
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center active:scale-95 relative"
               style={{
                 backgroundColor: '#FFFFFF',
                 border: '1px solid #E2CCB0',
                 boxShadow: '0 1px 4px rgba(61,43,31,0.04)',
               }}
-              aria-label="Filter"
+              aria-label="Urutkan"
             >
-              <FunnelIcon className="w-4 h-4" style={{ color: '#6B3A1F' }} />
+              <BarsArrowUpIcon className="w-4 h-4" style={{ color: '#6B3A1F' }} />
+              {sort && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full" style={{ backgroundColor: '#C47C3A' }} />
+              )}
             </button>
           </div>
         </Form>
@@ -331,7 +373,7 @@ export default function ProductsIndexRoute() {
       {/* ═══════════════════════════════════════════
           FILTER CONTEXT BAR
           ═══════════════════════════════════════════ */}
-      {(q || activeCategory) && (
+      {(q || activeCategory || sort) && (
         <div
           className="flex items-center justify-between px-4 py-2.5 border-b md:px-6"
           style={{ backgroundColor: '#FFF3E4', borderColor: 'rgba(240,230,214,0.5)' }}
@@ -340,8 +382,13 @@ export default function ProductsIndexRoute() {
             <span style={{ fontWeight: 700 }}>{count}</span>{' '}
             {q ? (
               <>hasil untuk <span style={{ fontWeight: 700 }}>"{q}"</span></>
-            ) : (
+            ) : activeCategory ? (
               <>produk di <span style={{ fontWeight: 700 }}>{activeCategory}</span></>
+            ) : (
+              <>produk</>
+            )}
+            {activeSortLabel && (
+              <> · <span style={{ fontWeight: 600 }}>{activeSortLabel}</span></>
             )}
           </p>
           <Link
@@ -362,12 +409,27 @@ export default function ProductsIndexRoute() {
         {/* Section header */}
         {products && products.length > 0 && (
           <div className="flex items-end justify-between mb-3">
-            <h2
-              className="text-sm md:text-base font-semibold"
-              style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
-            >
-              {q ? `Hasil untuk "${q}"` : activeCategory ?? 'Semua Menu'}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2
+                className="text-sm md:text-base font-semibold"
+                style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
+              >
+                {q ? `Hasil untuk "${q}"` : activeCategory ?? 'Semua Menu'}
+              </h2>
+              {activeSortLabel && (
+                <span
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: '#FFF3E4',
+                    color: '#6B3A1F',
+                    fontFamily: 'var(--font-label)',
+                    border: '1px solid #E2CCB0',
+                  }}
+                >
+                  {activeSortLabel}
+                </span>
+              )}
+            </div>
             <span
               className="text-[11px] md:text-xs font-medium"
               style={{ color: '#9C8070', fontFamily: 'var(--font-label)' }}
@@ -382,7 +444,14 @@ export default function ProductsIndexRoute() {
             <ProductListWithPagination
               products={products}
               paginationConfig={{ count, offset, limit }}
-              context={`products${q ? `?q=${encodeURIComponent(q)}` : ''}`}
+              context={`products${(() => {
+                const params = new URLSearchParams();
+                if (q) params.set('q', q);
+                if (categoryHandle) params.set('category', categoryHandle);
+                if (sort) params.set('sort', sort);
+                const qs = params.toString();
+                return qs ? `?${qs}` : '';
+              })()}`}
               className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4"
             />
           </motion.div>
@@ -422,6 +491,115 @@ export default function ProductsIndexRoute() {
           </motion.div>
         )}
       </section>
+
+      {/* ═══════════════════════════════════════════
+          SORT BOTTOM SHEET (mobile)
+          ═══════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showSortSheet && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden fixed inset-0 z-[60]"
+              style={{ backgroundColor: 'rgba(61,43,31,0.45)' }}
+              onClick={() => setShowSortSheet(false)}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="md:hidden fixed bottom-0 left-0 right-0 z-[70] rounded-t-2xl px-4 pt-4 pb-8"
+              style={{
+                backgroundColor: '#FFFFFF',
+                boxShadow: '0 -8px 30px rgba(61,43,31,0.15)',
+                paddingBottom: 'max(2rem, env(safe-area-inset-bottom))',
+              }}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center mb-4">
+                <div className="w-10 h-1 rounded-full" style={{ backgroundColor: '#E2CCB0' }} />
+              </div>
+
+              <div className="flex items-center justify-between mb-4">
+                <h3
+                  className="text-sm font-semibold"
+                  style={{ fontFamily: 'var(--font-display)', color: '#3D2B1F' }}
+                >
+                  Urutkan
+                </h3>
+                <button
+                  onClick={() => setShowSortSheet(false)}
+                  className="text-xs font-semibold px-3 py-1 rounded-full"
+                  style={{ color: '#6B3A1F', fontFamily: 'var(--font-label)' }}
+                >
+                  Tutup
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                {SORT_OPTIONS.map((option) => {
+                  const isActive = sort === option.value;
+                  return (
+                    <Link
+                      key={option.value}
+                      to={buildSortHref(isActive ? null : option.value)}
+                      replace
+                      onClick={() => setShowSortSheet(false)}
+                      className="flex items-center justify-between px-3 py-3 rounded-xl transition-colors active:bg-[#FFF3E4]"
+                      style={{
+                        backgroundColor: isActive ? '#FFF3E4' : 'transparent',
+                      }}
+                    >
+                      <span
+                        className="text-sm"
+                        style={{
+                          fontFamily: 'var(--font-body)',
+                          fontWeight: isActive ? 600 : 400,
+                          color: isActive ? '#6B3A1F' : '#3D2B1F',
+                        }}
+                      >
+                        {option.label}
+                      </span>
+                      {isActive && (
+                        <div
+                          className="w-5 h-5 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: '#6B3A1F' }}
+                        >
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="#FFFAF4" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {sort && (
+                <Link
+                  to={buildSortHref(null)}
+                  replace
+                  onClick={() => setShowSortSheet(false)}
+                  className="mt-3 w-full py-3 rounded-xl text-xs font-semibold text-center block transition-colors active:bg-[#F0E6D6]"
+                  style={{
+                    color: '#6B3A1F',
+                    fontFamily: 'var(--font-label)',
+                    border: '1px solid #E2CCB0',
+                  }}
+                >
+                  Reset Urutan
+                </Link>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
