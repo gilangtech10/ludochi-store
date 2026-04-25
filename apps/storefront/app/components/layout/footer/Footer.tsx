@@ -19,10 +19,10 @@ export const Footer = () => {
   const { region } = useRegion();
 
   const regionOptions = useMemo(() => {
-    return regions.map((r) => ({
+    return regions?.map((r) => ({
       label: `${r.name} (${r.currency_code})`,
       value: r.id,
-    }));
+    })) ?? [];
   }, [regions]);
 
   const onRegionChange = (regionId: string) => {

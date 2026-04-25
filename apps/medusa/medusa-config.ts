@@ -54,12 +54,6 @@ module.exports = defineConfig({
       cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
     },
   },
-  plugins: [
-    {
-      resolve: '@lambdacurry/medusa-product-reviews',
-      options: {},
-    },
-  ],
   modules: [
     {
       resolve: '@medusajs/medusa/payment',
@@ -81,19 +75,4 @@ module.exports = defineConfig({
     eventBusModule,
     workflowEngineModule,
   ],
-  admin: {
-    backendUrl: process.env.ADMIN_BACKEND_URL,
-    vite: (config) => {
-      return {
-        resolve: {
-          alias: {
-            '@lambdacurrymedusa-product-reviewsadmin': '@lambdacurry/medusa-product-reviews/admin',
-          }
-        },
-        optimizeDeps: {
-          include: ['@lambdacurry/medusa-plugins-sdk'],
-        },
-      };
-    },
-  },
 });

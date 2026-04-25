@@ -60,6 +60,7 @@ export const ProductListItem: FC<ProductListItemProps> = ({ product, className, 
       }, 1500);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [justAdded]);
 
   return (

@@ -5,13 +5,13 @@ import { fetchProducts } from './products.server';
 export const getProductListData = async (request: Request) => {
   const region = await getSelectedRegion(request.headers);
 
-  const productsQuery: HttpTypes.StoreProductParams = {
-    limit: 10,
-    offset: 0,
-  };
+  if (!region) {
+    throw new Error('Region not found');
+  }
 
   const { products } = await fetchProducts(request, {
-    ...productsQuery,
+    limit: 10,
+    offset: 0,
     region_id: region.id,
     fields: 'id,title,handle,thumbnail,variants.*,variants.prices.*',
   });

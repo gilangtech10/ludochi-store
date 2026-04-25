@@ -1,4 +1,4 @@
-import { MedusaPluginsSDK } from '@lambdacurry/medusa-plugins-sdk';
+import Medusa from '@medusajs/js-sdk';
 import { buildNewLRUCache } from './cache-builder.server';
 import { config } from './config.server';
 
@@ -19,7 +19,7 @@ export const baseMedusaConfig = {
   publishableKey: config.MEDUSA_PUBLISHABLE_KEY,
 };
 
-export const sdk = new MedusaPluginsSDK({
+export const sdk = new Medusa({
   ...baseMedusaConfig,
 });
 

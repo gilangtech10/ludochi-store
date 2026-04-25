@@ -276,7 +276,7 @@ export const getProductMeta: MetaFunction = ({ data, matches }) => {
   const product = (data as any).product as StoreProduct;
   const defaultVariant = getCheapestProductVariant(product);
 
-  if (!product) return [];
+  if (!product || !region) return [];
 
   const title = product.title;
   const description = product.description;
