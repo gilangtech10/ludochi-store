@@ -17,5 +17,12 @@ export default defineConfig({
     noExternal: ['@medusajs/js-sdk'],
   },
   plugins: [reactRouter(), tsconfigPaths({ root: './' }), vanillaExtractPlugin()],
-  build: {},
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'SOURCEMAP_ERROR' || warning.message?.includes('points to missing source files')) return;
+        warn(warning);
+      },
+    },
+  },
 });

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { addressPayload, addressToMedusaAddress, medusaAddressToAddress } from '@libs/util/addresses';
+import { addressPayload } from '@libs/util/addresses';
 import { removeCartId } from '@libs/util/server/cookies.server';
 import { initiatePaymentSession, placeOrder, retrieveCart, updateCart } from '@libs/util/server/data/cart.server';
 import type { StoreCart } from '@medusajs/types';
@@ -8,32 +8,12 @@ import { redirect, data as remixData } from 'react-router';
 import { getValidatedFormData } from 'remix-hook-form';
 import { z } from 'zod';
 
-const addressSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').optional(),
-  lastName: z.string().min(1, 'Last name is required').optional(),
-  company: z.string().optional(),
-  address1: z.string().min(1, 'Address is required').optional(),
-  address2: z.string().optional(),
-  city: z.string().min(1, 'City is required').optional(),
-  province: z.string().min(1, 'Province is required').optional(),
-  countryCode: z.string().min(1, 'Country is required'),
-  postalCode: z.string().min(1, 'Postal code is required'),
-  phone: z.string().optional(),
+export const completeCheckoutSchema = z.object({
+  cartId: z.string(),
+  providerId: z.string(),
+  paymentMethodId: z.string(),
+  noRedirect: z.boolean().optional(),
 });
-
-export const completeCheckoutSchema = z
-  .object({
-    cartId: z.string(),
-    providerId: z.string(),
-    paymentMethodId: z.string(),
-    sameAsShipping: z.boolean().optional(),
-    billingAddress: z.any(),
-    noRedirect: z.boolean().optional(),
-  })
-  .refine((data) => (data.sameAsShipping ? z.any() : addressSchema.safeParse(data.billingAddress).success), {
-    message: 'Valid billing address is required when creating a new address',
-    path: ['root'],
-  });
 
 export type CompleteCheckoutFormData = z.infer<typeof completeCheckoutSchema>;
 
@@ -49,23 +29,25 @@ export async function action(actionArgs: ActionFunctionArgs) {
 
   let cart = (await retrieveCart(actionArgs.request)) as StoreCart;
 
-  const billingAddress = data.sameAsShipping ? cart.shipping_address : addressToMedusaAddress(data.billingAddress);
+  // Selalu gunakan shipping address sebagai billing address
+  if (cart.shipping_address) {
+    cart = (
+      await updateCart(actionArgs.request, {
+        billing_address: addressPayload(cart.shipping_address),
+      })
+    )?.cart ?? cart;
+  }
 
-  cart = (
-    await updateCart(actionArgs.request, {
-      billing_address: addressPayload(billingAddress),
-    })
-  )?.cart;
+  // Hanya buat sesi baru jika belum ada sesi untuk provider ini
+  // (tidak cek status 'pending' karena webhook bisa mengubah status sebelum form di-submit)
+  const existingSession = cart.payment_collection?.payment_sessions?.find(
+    (ps) => ps.provider_id === data.providerId,
+  );
 
-  const activePaymentSession = cart.payment_collection?.payment_sessions?.find((ps) => ps.status === 'pending');
-
-  if (
-    activePaymentSession?.provider_id !== data.providerId ||
-    !cart.payment_collection?.payment_sessions?.length
-  ) {
+  if (!existingSession) {
     await initiatePaymentSession(actionArgs.request, cart, {
       provider_id: data.providerId,
-      data: {},
+      data: { cart_id: cart.id },
     });
   }
 

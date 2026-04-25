@@ -8,7 +8,9 @@
       "Bash(grep \"\\\\.d\\\\.ts$\")",
       "Bash(cat react-router.config.ts)",
       "Bash(cat vite.config.ts)",
-      "Bash(cat vite.config.js)"
+      "Bash(cat vite.config.js)",
+      "Bash(node *)",
+      "Bash(yarn workspace *)"
     ]
   }
 }

@@ -61,7 +61,11 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
     orderId: string,
     amount: number,
     customer?: { firstName?: string; lastName?: string; email?: string },
+    cartId?: string,
   ): Promise<{ token: string; redirect_url: string }> {
+    // Gunakan cartId di callback URL agar halaman sukses bisa lookup cart → order.
+    // orderId adalah ID unik per sesi (berbeda dari cartId).
+    const callbackCartId = cartId || orderId;
     const res = await fetch(`${this.snapBaseUrl}/transactions`, {
       method: 'POST',
       headers: {
@@ -77,13 +81,13 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
           email: customer?.email ?? '',
         },
         callbacks: {
-          finish: `${this.storefrontUrl}/checkout/success?cart_id=${orderId}`,
+          finish: `${this.storefrontUrl}/checkout/success?cart_id=${callbackCartId}`,
           error: `${this.storefrontUrl}/checkout?error=payment_failed`,
           pending: `${this.storefrontUrl}/checkout?status=pending`,
         },
         gopay: {
           enable_callback: true,
-          callback_url: `${this.storefrontUrl}/checkout/success?order_id=${orderId}`,
+          callback_url: `${this.storefrontUrl}/checkout/success?cart_id=${callbackCartId}`,
         },
       }),
     });
@@ -124,24 +128,40 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const amount = Number(input.amount);
-    const cartId = ((input.context as any)?.cart as { id?: string } | undefined)?.id;
-    const orderId = cartId || `LUDOCHI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const cartId =
+      (input.data as any)?.cart_id ||
+      ((input.context as any)?.cart as { id?: string } | undefined)?.id;
+
+    // Medusa passes its own auto-generated session ID (pay_ses_01...) via input.data.session_id
+    // before calling this method. We use it as the Midtrans order_id so that when the Midtrans
+    // webhook arrives with order_id = "pay_ses_01...", getWebhookActionAndData can return
+    // session_id: order_id and Medusa's processPaymentWorkflow will find the session directly.
+    const medusaSessionId = (input.data as any)?.session_id as string | undefined;
+    const suffix = `${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const orderId = medusaSessionId ?? (cartId ? `${cartId}-${suffix}` : `LUDOCHI-${suffix}`);
+
     const customer = input.context?.customer as
       | { first_name?: string; last_name?: string; email?: string }
       | undefined;
 
-    const snap = await this.createSnapTransaction(orderId, amount, {
-      firstName: customer?.first_name,
-      lastName: customer?.last_name,
-      email: customer?.email,
-    });
+    const snap = await this.createSnapTransaction(
+      orderId,
+      amount,
+      {
+        firstName: customer?.first_name,
+        lastName: customer?.last_name,
+        email: customer?.email,
+      },
+      cartId,
+    );
 
     return {
-      id: orderId, // PaymentSession ID = Midtrans order_id (supaya webhook bisa match)
+      id: orderId, // PaymentSession ID di Medusa = Midtrans order_id (agar webhook bisa match)
       data: {
         snap_token: snap.token,
         snap_redirect_url: snap.redirect_url,
         order_id: orderId,
+        cart_id: cartId,
         amount,
         currency: input.currency_code,
       },
@@ -223,13 +243,10 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
   }
 
   async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
-    const result = await this.initiatePayment({
-      amount: input.amount,
-      currency_code: input.currency_code,
-      context: input.context,
-      data: input.data,
-    });
-    return { data: result.data };
+    // Jangan buat transaksi Snap baru saat cart di-update.
+    // Midtrans akan menolak jika order_id yang sama sudah digunakan.
+    // Snap token yang ada tetap valid; amount terbaru akan divalidasi lewat authorizePayment.
+    return { data: input.data ?? {} };
   }
 
   async getWebhookActionAndData(

@@ -53,6 +53,7 @@ export async function action(actionArgs: ActionFunctionArgs) {
   try {
     await initiatePaymentSession(actionArgs.request, updatedCart, {
       provider_id: 'pp_midtrans_midtrans',
+      data: { cart_id: updatedCart.id },
     });
   } catch (e) {
     console.warn('Could not initiate Midtrans payment session after shipping update:', e);

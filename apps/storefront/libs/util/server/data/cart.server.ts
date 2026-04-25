@@ -101,6 +101,7 @@ export const ensureMidtransPaymentSession = async (request: Request, cart: Store
   if (!activeSession) {
     await initiatePaymentSession(request, cart, {
       provider_id: 'pp_midtrans_midtrans',
+      data: { cart_id: cart.id },
     });
 
     return (await retrieveCart(request))!;

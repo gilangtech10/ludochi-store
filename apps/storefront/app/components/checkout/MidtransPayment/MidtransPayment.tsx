@@ -4,22 +4,13 @@ import { FetcherKeys } from '@libs/util/fetcher-keys';
 import { CompleteCheckoutFormData, completeCheckoutSchema } from '@app/routes/api.checkout.complete';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CustomPaymentSession } from '@libs/types';
-import { medusaAddressToAddress } from '@libs/util';
-import { MedusaAddress } from '@libs/types';
-import { ArrowRightIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { CreditCardIcon } from '@heroicons/react/24/outline';
 import { FC, FormEvent, useEffect, useRef, useState } from 'react';
 import { useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
-import HiddenAddressGroup from '../HiddenAddressGroup';
 import { FormError } from '@app/components/common/remix-hook-form/forms/FormError';
-import { Checkbox, TextField } from '@lambdacurry/forms/remix-hook-form';
+import { TextField } from '@lambdacurry/forms/remix-hook-form';
 import { CheckoutOrderSummary } from '../CheckoutOrderSummary';
-import {
-  AddressForm,
-  defaultAddressData,
-  type AddressFormData,
-} from '../AddressForm/AddressForm';
-import { AddressDisplay } from '../address/AddressDisplay';
 
 declare global {
   interface Window {
@@ -84,20 +75,9 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
 
   if (!cart) return null;
 
-  const defaultBillingAddress = medusaAddressToAddress(cart.billing_address as MedusaAddress);
-  const shippingAddress = defaultAddressData(cart?.shipping_address) ?? { address: defaultBillingAddress, completed: false };
-
-  const countryOptions =
-    (cart.region?.countries?.map((c) => ({ value: c.iso_2, label: c.display_name })) as {
-      value: string;
-      label: string;
-    }[]) ?? [];
-
   const defaultValues: CompleteCheckoutFormData = {
     cartId: cart.id,
     paymentMethodId: 'new',
-    sameAsShipping: true,
-    billingAddress: defaultBillingAddress,
     providerId: PROVIDER_ID,
   };
 
@@ -108,21 +88,7 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
     submitConfig: { method: 'post', action: '/api/checkout/complete' },
   });
 
-  const sameAsShipping = form.watch('sameAsShipping');
-  const billingAddress = form.watch('billingAddress');
   const hasShippingMethod = (cart.shipping_methods?.length ?? 0) > 0;
-
-  const setBillingAddress = (addr: AddressFormData) => {
-    form.setValue('billingAddress.address1', addr.address.address1 ?? '');
-    form.setValue('billingAddress.address2', addr.address.address2 ?? '');
-    form.setValue('billingAddress.city', addr.address.city ?? '');
-    form.setValue('billingAddress.province', addr.address.province ?? '');
-    form.setValue('billingAddress.countryCode', addr.address.countryCode ?? '');
-    form.setValue('billingAddress.postalCode', addr.address.postalCode ?? '');
-    form.setValue('billingAddress.phone', addr.address.phone ?? '');
-    form.setValue('billingAddress.firstName', addr.address.firstName ?? '');
-    form.setValue('billingAddress.lastName', addr.address.lastName ?? '');
-  };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -212,32 +178,6 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
             Kartu kredit/debit, GoPay, OVO, DANA, ShopeePay, QRIS, transfer bank, dan Indomaret/Alfamart.
           </p>
         </div>
-
-        {/* Billing address */}
-        <h3
-          className="text-[9px] tracking-[0.2em] uppercase font-semibold mt-5 mb-2"
-          style={{ color: '#9C8070', fontFamily: 'var(--font-label)' }}
-        >
-          Alamat Tagihan
-        </h3>
-
-        <Checkbox className="mb-3" name="sameAsShipping" label="Sama dengan alamat pengiriman" />
-
-        {!sameAsShipping && (
-          <AddressForm
-            mode="billing"
-            address={billingAddress}
-            setAddress={setBillingAddress}
-          />
-        )}
-
-        <HiddenAddressGroup address={billingAddress} prefix="billingAddress" />
-
-        {sameAsShipping && (
-          <div className="-mt-1 mb-4">
-            <AddressDisplay address={shippingAddress.address} countryOptions={countryOptions} />
-          </div>
-        )}
 
         {snapError && (
           <p className="text-xs mt-2 mb-1 px-1" style={{ color: '#B91C1C', fontFamily: 'var(--font-body)' }}>
