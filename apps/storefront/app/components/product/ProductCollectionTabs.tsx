@@ -1,6 +1,6 @@
 import { TabButton } from '@app/components/tabs/TabButton';
 import { TabList } from '@app/components/tabs/TabList';
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup } from '@headlessui/react';
 import { StoreCollection } from '@medusajs/types';
 import { type FC, Fragment } from 'react';
 
@@ -10,20 +10,22 @@ export interface ProductCollectionTabsProps {
   onChange?: (index: number) => void;
 }
 
-export const ProductCollectionTabs: FC<ProductCollectionTabsProps> = ({ collections, ...props }) => {
+export const ProductCollectionTabs: FC<ProductCollectionTabsProps> = ({ collections, selectedIndex = 0, onChange }) => {
   if (!collections?.length) return null;
 
   return (
-    <Tab.Group {...props}>
+    <TabGroup selectedIndex={selectedIndex} onChange={onChange}>
       <TabList>
-        <Tab as={Fragment}>{({ selected }) => <TabButton selected={selected}>All</TabButton>}</Tab>
+        <Tab as={Fragment}>
+          <TabButton selected={selectedIndex === 0}>All</TabButton>
+        </Tab>
 
-        {collections.map((collection) => (
+        {collections.map((collection, idx) => (
           <Tab key={collection.id} as={Fragment}>
-            {({ selected }) => <TabButton selected={selected}>{collection.title}</TabButton>}
+            <TabButton selected={selectedIndex === idx + 1}>{collection.title}</TabButton>
           </Tab>
         ))}
       </TabList>
-    </Tab.Group>
+    </TabGroup>
   );
 };

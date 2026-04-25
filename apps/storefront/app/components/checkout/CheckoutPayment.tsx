@@ -1,84 +1,89 @@
-import { Button } from '@app/components/common/buttons/Button';
 import { useCheckout } from '@app/hooks/useCheckout';
-import { useEnv } from '@app/hooks/useEnv';
 import { CheckoutStep } from '@app/providers/checkout-provider';
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { CustomPaymentSession } from '@libs/types';
 import clsx from 'clsx';
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { ManualPayment } from './ManualPayment/ManualPayment';
-import { StripePayment } from './StripePayment';
+import { MidtransPayment } from './MidtransPayment';
+
+const MIDTRANS_PROVIDER_ID = 'pp_midtrans_midtrans';
+const MANUAL_PROVIDER_ID = 'pp_system_default';
 
 export const CheckoutPayment: FC = () => {
-  const { env } = useEnv();
   const { step, paymentProviders, cart } = useCheckout();
   const isActiveStep = step === CheckoutStep.PAYMENT;
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   if (!cart) return null;
 
-  const hasStripePaymentProvider = useMemo(
-    () => paymentProviders?.some((p) => p.id.includes('pp_stripe_stripe')),
+  const hasMidtrans = useMemo(
+    () => paymentProviders?.some((p) => p.id === MIDTRANS_PROVIDER_ID),
     [paymentProviders],
   );
 
-  const hasManualPaymentProvider = useMemo(
-    () => !!paymentProviders?.some((p) => p.id.includes('pp_system_default')),
+  const hasManual = useMemo(
+    () => paymentProviders?.some((p) => p.id === MANUAL_PROVIDER_ID),
     [paymentProviders],
   );
 
   const paymentOptions = [
     {
-      id: 'pp_stripe_stripe',
-      label: 'Credit Card',
-      component: StripePayment,
-      isActive: hasStripePaymentProvider,
+      id: MIDTRANS_PROVIDER_ID,
+      label: 'Midtrans',
+      component: MidtransPayment,
+      isActive: hasMidtrans,
     },
     {
-      id: 'pp_system_default',
+      id: MANUAL_PROVIDER_ID,
       label: 'Test Payment',
       component: ManualPayment,
-      isActive: hasManualPaymentProvider && env.NODE_ENV === 'development',
+      isActive: hasManual,
     },
   ];
 
-  const activePaymentOptions = useMemo(() => paymentOptions.filter((p) => p.isActive), [paymentOptions]);
+  const activeOptions = useMemo(
+    () => paymentOptions.filter((p) => p.isActive),
+    [paymentOptions],
+  );
 
   return (
     <div className="checkout-payment">
       <div className={clsx({ 'h-0 overflow-hidden opacity-0': !isActiveStep })}>
-        <Tab.Group>
-          {activePaymentOptions.length > 1 && (
-            <Tab.List className="bg-transparent mb-4 mt-6 inline-flex gap-1 rounded-none p-1 border border-[#2C1E16]/20">
-              {activePaymentOptions.map((paymentOption, index) => (
-                <Tab
-                  as={Button}
-                  key={paymentOption.id}
-                  className={({ selected }) =>
-                    clsx('!rounded-none transition-colors duration-300 font-display italic tracking-wide', {
-                      '!bg-[#2C1E16] !text-[#F5F2EB] shadow-none !border-[#2C1E16]': selected,
-                      'bg-transparent !text-[#2C1E16] hover:!bg-[#B0894A]/10 !border-transparent':
-                        !selected,
-                    })
-                  }
-                >
-                  {paymentOption.label}
+        <TabGroup selectedIndex={selectedIndex} onChange={setSelectedIndex}>
+          {activeOptions.length > 1 && (
+            <TabList className="flex gap-2 mt-5 mb-1">
+              {activeOptions.map((opt, idx) => (
+                <Tab key={opt.id} className="focus:outline-none">
+                  <span
+                    className="px-4 py-2 rounded-full text-xs font-semibold transition-all"
+                    style={{
+                      backgroundColor: idx === selectedIndex ? '#3D2B1F' : '#F0E6D6',
+                      color: idx === selectedIndex ? '#FFFAF4' : '#6B3A1F',
+                      fontFamily: 'var(--font-label)',
+                    }}
+                  >
+                    {opt.label}
+                  </span>
                 </Tab>
               ))}
-            </Tab.List>
+            </TabList>
           )}
 
-          <Tab.Panels>
-            {activePaymentOptions.map((paymentOption) => {
-              const PaymentComponent = paymentOption.component;
-
+          <TabPanels>
+            {activeOptions.map((opt) => {
+              const PaymentComponent = opt.component;
               return (
-                <Tab.Panel key={paymentOption.id}>
-                  <PaymentComponent isActiveStep={isActiveStep} paymentMethods={[] as CustomPaymentSession[]} />
-                </Tab.Panel>
+                <TabPanel key={opt.id}>
+                  <PaymentComponent
+                    isActiveStep={isActiveStep}
+                    paymentMethods={[] as CustomPaymentSession[]}
+                  />
+                </TabPanel>
               );
             })}
-          </Tab.Panels>
-        </Tab.Group>
+          </TabPanels>
+        </TabGroup>
       </div>
     </div>
   );

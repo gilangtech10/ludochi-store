@@ -1,6 +1,6 @@
 import { TabButton } from '@app/components/tabs/TabButton';
 import { TabList } from '@app/components/tabs/TabList';
-import { Tab } from '@headlessui/react';
+import { Tab, TabGroup } from '@headlessui/react';
 import { StoreProductCategory } from '@medusajs/types';
 import { type FC, Fragment } from 'react';
 
@@ -10,20 +10,22 @@ export interface ProductCategoryTabsProps {
   onChange?: (index: number) => void;
 }
 
-export const ProductCategoryTabs: FC<ProductCategoryTabsProps> = ({ categories, ...props }) => {
+export const ProductCategoryTabs: FC<ProductCategoryTabsProps> = ({ categories, selectedIndex = 0, onChange }) => {
   if (!categories?.length) return null;
 
   return (
-    <Tab.Group {...props}>
+    <TabGroup selectedIndex={selectedIndex} onChange={onChange}>
       <TabList>
-        <Tab as={Fragment}>{({ selected }) => <TabButton selected={selected}>All</TabButton>}</Tab>
+        <Tab as={Fragment}>
+          <TabButton selected={selectedIndex === 0}>All</TabButton>
+        </Tab>
 
-        {categories.map((category) => (
+        {categories.map((category, idx) => (
           <Tab key={category.id} as={Fragment}>
-            {({ selected }) => <TabButton selected={selected}>{category.name}</TabButton>}
+            <TabButton selected={selectedIndex === idx + 1}>{category.name}</TabButton>
           </Tab>
         ))}
       </TabList>
-    </Tab.Group>
+    </TabGroup>
   );
 };

@@ -10,7 +10,6 @@ import { useSiteDetails } from '@app/hooks/useSiteDetails';
 import { convertToFormData } from '@libs/util/forms/objectToFormData';
 import { useMemo } from 'react';
 import { useFetcher } from 'react-router';
-import { StripeSecurityImage } from '../../images/StripeSecurityImage';
 
 export const Footer = () => {
   const { footerNavigationItems } = useSiteDetails();

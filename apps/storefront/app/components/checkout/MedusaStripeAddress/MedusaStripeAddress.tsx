@@ -1,11 +1,6 @@
-import { useCheckout } from '@app/hooks/useCheckout';
-import { useEnv } from '@app/hooks/useEnv';
-import { useRegion } from '@app/hooks/useRegion';
 import { Address } from '@libs/types';
 import { BaseCartAddress } from '@medusajs/types/dist/http/cart/common';
-import { AddressElement, Elements } from '@stripe/react-stripe-js';
-import { type AddressMode, StripeAddressElementChangeEvent, loadStripe } from '@stripe/stripe-js';
-import { type Dispatch, type FC, type SetStateAction, useMemo } from 'react';
+import { type FC, useCallback } from 'react';
 
 export interface StripeAddress {
   address: Address;
@@ -20,144 +15,166 @@ export const defaultStripeAddress = (address?: BaseCartAddress | null | undefine
     address2: address?.address_2 || '',
     province: address?.province || '',
     city: address?.city || '',
-    countryCode: address?.country_code || 'us',
+    countryCode: address?.country_code || 'id',
     postalCode: address?.postal_code || '',
     phone: address?.phone || '',
   },
   completed: false,
 });
 
-interface MedusaStripeAddressProps {
+interface AddressFormProps {
   title?: string;
   address: Address;
-  mode: AddressMode;
+  mode?: string;
   allowedCountries?: string[];
   setAddress: (address: StripeAddress) => void;
 }
 
-export const MedusaStripeAddress: FC<MedusaStripeAddressProps> = ({
-  title,
-  address,
-  mode,
-  allowedCountries = [],
-  setAddress,
-}) => {
-  const { env } = useEnv();
-  const { cart } = useCheckout();
-  const { region } = useRegion();
+const fieldStyle = {
+  width: '100%',
+  padding: '10px 14px',
+  fontSize: '0.875rem',
+  backgroundColor: '#FFFAF4',
+  color: '#3D2B1F',
+  border: '1px solid #E2CCB0',
+  borderRadius: '8px',
+  outline: 'none',
+  fontFamily: 'var(--font-body)',
+};
 
-  const handleChange = (
-    event:
-      | StripeAddressElementChangeEvent
-      | Pick<StripeAddressElementChangeEvent, 'complete' | 'isNewAddress' | 'value'>,
-  ) => {
-    const fullNameArray = event.value.name?.split(' ') || [];
-    const firstName = fullNameArray.slice(0, -1).join(' ');
-    const lastName = fullNameArray.slice(-1).join(' ');
+const labelStyle = {
+  display: 'block',
+  fontSize: '0.6rem',
+  fontWeight: 600,
+  letterSpacing: '0.2em',
+  textTransform: 'uppercase' as const,
+  color: '#9C8070',
+  marginBottom: '4px',
+  fontFamily: 'var(--font-label)',
+};
 
-    // Stripe does not return province for some countries
-    const useProvincePlaceHolder = event.complete && !event.value.address.state;
-
-    setAddress({
-      address: {
-        firstName: event.value.firstName || firstName || '',
-        lastName: event.value.lastName || lastName || '',
-        address1: event.value.address.line1,
-        address2: event.value.address.line2 ?? '',
-        province: useProvincePlaceHolder ? '-' : event.value.address.state,
-        city: event.value.address.city,
-        countryCode: event.value.address.country?.toLowerCase() as string,
-        postalCode: event.value.address.postal_code,
-        phone: event.value.phone ?? '',
-      },
-      completed: event.complete,
-    });
-  };
-
-  const stripePromise = useMemo(() => {
-    return env.STRIPE_PUBLIC_KEY ? loadStripe(env.STRIPE_PUBLIC_KEY) : null;
-  }, [env.STRIPE_PUBLIC_KEY]);
-
-  if (!cart) return null;
+export const MedusaStripeAddress: FC<AddressFormProps> = ({ title, address, setAddress }) => {
+  const update = useCallback(
+    (field: keyof Address, value: string) => {
+      const updated: Address = { ...address, [field]: value };
+      setAddress({
+        address: updated,
+        completed: !!(
+          updated.address1 &&
+          updated.city &&
+          updated.postalCode &&
+          updated.countryCode
+        ),
+      });
+    },
+    [address, setAddress],
+  );
 
   return (
-    <div>
-      {title && <h3 className="mt-6 text-sm">{title}</h3>}
-      <Elements
-        stripe={stripePromise}
-        options={{
-          mode: 'setup',
-          currency: region.currency_code,
-          appearance: {
-            variables: {
-              borderRadius: '0px',
-              spacingUnit: '4.601px',
-              fontSizeBase: '14px',
-              colorText: '#E8DFD4',
-              colorBackground: '#261D19',
-              colorPrimary: '#C9A962',
-              colorDanger: '#C0392B',
-              fontWeightNormal: '400',
-              fontWeightBold: '600',
-              fontSizeSm: '12px',
-            },
-            rules: {
-              '.Input': {
-                fontSize: '0.95rem',
-                color: '#E8DFD4',
-                backgroundColor: '#261D19',
-                border: '1px solid #4A3F35',
-                boxShadow: 'none',
-                padding: '10px 14px',
-              },
-              '.Input:focus': {
-                border: '1px solid #C9A962',
-                boxShadow: 'none',
-                outline: 'none',
-              },
-              '.Input::placeholder': {
-                color: '#9C8B7A',
-              },
-              '.Label': {
-                fontWeight: '400',
-                color: '#C9A962',
-                fontSize: '0.6rem',
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                marginBottom: '6px',
-              },
-              '.Error': {
-                color: '#C0392B',
-                fontSize: '0.75rem',
-              },
-            },
-          },
-        }}
-      >
-        <AddressElement
-          options={{
-            mode,
-            allowedCountries,
-            display: { name: 'split' },
-            fields: { phone: 'always' },
-            validation: { phone: { required: 'always' } },
-            defaultValues: {
-              address: {
-                line1: address.address1,
-                line2: address.address2,
-                city: address.city,
-                state: address.province,
-                postal_code: address.postalCode,
-                country: address.countryCode?.toUpperCase() || 'us',
-              },
-              phone: address.phone,
-              firstName: address.firstName,
-              lastName: address.lastName,
-            },
-          }}
-          onChange={handleChange}
+    <div className="space-y-3 mt-3">
+      {title && (
+        <h3
+          className="text-xs font-semibold uppercase tracking-widest mb-2"
+          style={{ color: '#9C8070', fontFamily: 'var(--font-label)' }}
+        >
+          {title}
+        </h3>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Nama Depan</label>
+          <input
+            style={fieldStyle}
+            value={address.firstName ?? ''}
+            onChange={(e) => update('firstName', e.target.value)}
+            placeholder="Budi"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Nama Belakang</label>
+          <input
+            style={fieldStyle}
+            value={address.lastName ?? ''}
+            onChange={(e) => update('lastName', e.target.value)}
+            placeholder="Santoso"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label style={labelStyle}>Alamat</label>
+        <input
+          style={fieldStyle}
+          value={address.address1 ?? ''}
+          onChange={(e) => update('address1', e.target.value)}
+          placeholder="Jl. Contoh No. 1"
         />
-      </Elements>
+      </div>
+
+      <div>
+        <label style={labelStyle}>Alamat 2 (opsional)</label>
+        <input
+          style={fieldStyle}
+          value={address.address2 ?? ''}
+          onChange={(e) => update('address2', e.target.value)}
+          placeholder="RT/RW, Gedung, Lantai..."
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Kota</label>
+          <input
+            style={fieldStyle}
+            value={address.city ?? ''}
+            onChange={(e) => update('city', e.target.value)}
+            placeholder="Jakarta"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Provinsi</label>
+          <input
+            style={fieldStyle}
+            value={address.province ?? ''}
+            onChange={(e) => update('province', e.target.value)}
+            placeholder="DKI Jakarta"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label style={labelStyle}>Kode Pos</label>
+          <input
+            style={fieldStyle}
+            value={address.postalCode ?? ''}
+            onChange={(e) => update('postalCode', e.target.value)}
+            placeholder="14350"
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Kode Negara</label>
+          <input
+            style={fieldStyle}
+            value={address.countryCode ?? 'id'}
+            onChange={(e) => update('countryCode', e.target.value)}
+            placeholder="id"
+            maxLength={2}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label style={labelStyle}>Nomor Telepon</label>
+        <input
+          style={fieldStyle}
+          value={address.phone ?? ''}
+          onChange={(e) => update('phone', e.target.value)}
+          placeholder="+62812..."
+          type="tel"
+        />
+      </div>
     </div>
   );
 };

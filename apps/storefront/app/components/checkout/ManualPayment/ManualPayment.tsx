@@ -10,8 +10,8 @@ export interface ManualPaymentProps extends PropsWithChildren {
 export const ManualPayment: FC<ManualPaymentProps> = (props) => (
   <CompleteCheckoutForm
     providerId="pp_system_default"
-    id="TestPaymentForm"
-    submitMessage="Checkout using Test Payment"
+    id="ManualPaymentForm"
+    submitMessage="Konfirmasi Pesanan (Test)"
     className="mt-4"
     {...props}
   />

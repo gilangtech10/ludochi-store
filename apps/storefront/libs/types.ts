@@ -1,6 +1,5 @@
 import { BaseAddress, StoreDTO } from '@medusajs/types';
 import { BasePaymentSession } from '@medusajs/types/dist/http/payment/common';
-import { PaymentMethod as StripePaymentMethod } from '@stripe/stripe-js';
 
 export enum NavigationItemLocation {
   header = 'header',
@@ -105,15 +104,9 @@ export interface Address {
 
 export type MedusaAddress = Omit<BaseAddress, 'id' | 'customer_id'>;
 
-export interface ModifiedStripePaymentMethod
-  extends Pick<
-    StripePaymentMethod,
-    'id' | 'object' | 'billing_details' | 'card' | 'created' | 'customer' | 'livemode' | 'metadata' | 'type'
-  > {}
-
 export interface CustomPaymentSession extends BasePaymentSession {
   provider_id: string;
-  data: ModifiedStripePaymentMethod;
+  data: Record<string, unknown>;
 }
 
 export type CreditCardBrand = 'visa' | 'mastercard' | 'amex' | 'discover' | 'jcb' | 'diners' | 'unionpay' | 'unknown';

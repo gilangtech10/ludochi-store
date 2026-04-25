@@ -1,4 +1,3 @@
-import { SubmitButton } from '@app/components/common/remix-hook-form/buttons/SubmitButton';
 import { useCheckout } from '@app/hooks/useCheckout';
 import { CompleteCheckoutFormData, completeCheckoutSchema } from '@app/routes/api.checkout.complete';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,7 +55,9 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
 
   const hasPaymentMethods = paymentMethodsForProvider.length > 0;
 
-  const initialPaymentMethodId = hasPaymentMethods ? paymentMethodsForProvider[0].data.id : 'new';
+  const initialPaymentMethodId = hasPaymentMethods
+    ? (paymentMethodsForProvider[0].data.id as string)
+    : 'new';
 
   if (!cart) return null;
 
@@ -124,14 +125,20 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
   const hasShippingMethod = (cart.shipping_methods?.length ?? 0) > 0;
 
   const PaymentSubmitButton = () => (
-    <SubmitButton
+    <button
       form={id}
-      className="btn-brass engraved w-full lg:w-auto !rounded-none !px-12"
-      style={{ fontFamily: 'var(--font-label)', letterSpacing: '0.15em', textTransform: 'uppercase', fontSize: '0.65rem' }}
+      type="submit"
       disabled={isSubmitting || isCartMutating || (!sameAsShipping && !billingAddress) || !hasShippingMethod}
+      className="w-full lg:w-auto px-10 py-3.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-50"
+      style={{
+        backgroundColor: '#3D2B1F',
+        color: '#FFFAF4',
+        fontFamily: 'var(--font-label)',
+        letterSpacing: '0.06em',
+      }}
     >
-      {isSubmitting ? 'Confirming...' : (submitMessage ?? 'Confirm & Pay')}
-    </SubmitButton>
+      {isSubmitting ? 'Memproses…' : (submitMessage ?? 'Konfirmasi & Bayar')}
+    </button>
   );
 
   if (!activePaymentSession) return null;
@@ -143,9 +150,14 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
           <TextField type="hidden" name="cartId" value={cart.id} />
           <TextField type="hidden" name="providerId" value={providerId} />
 
-          <h3 className="academia-label mt-6 mb-2">Billing address</h3>
+          <h3
+            className="mt-5 mb-2 text-[10px] font-semibold tracking-[0.2em] uppercase"
+            style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+          >
+            Alamat Tagihan
+          </h3>
 
-          <Checkbox className="my-4" name="sameAsShipping" label="Same as shipping address" />
+          <Checkbox className="my-3" name="sameAsShipping" label="Sama dengan alamat pengiriman" />
 
           {!sameAsShipping && (
             <MedusaStripeAddress mode="billing" address={billingAddress} setAddress={setBillingAddress} />

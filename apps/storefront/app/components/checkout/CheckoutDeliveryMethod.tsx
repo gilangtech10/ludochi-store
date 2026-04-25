@@ -18,7 +18,6 @@ import { BaseCartShippingMethod } from '@medusajs/types/dist/http/cart/common';
 import { FC, Fragment, useEffect, useMemo, useRef } from 'react';
 import { useFetcher } from 'react-router';
 import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
-import { StripeSecurityImage } from '../images/StripeSecurityImage';
 import { CheckoutSectionHeader } from './CheckoutSectionHeader';
 import { ShippingOptionsRadioGroup } from './checkout-fields/ShippingOptionsRadioGroup/ShippingOptionsRadioGroup';
 
@@ -84,12 +83,11 @@ export const CheckoutDeliveryMethod: FC = () => {
   return (
     <div className="checkout-delivery-method">
       <CheckoutSectionHeader completed={showCompleted} setStep={setStep} step={CheckoutStep.PAYMENT}>
-        Delivery & Payment
+        Metode Pengiriman
       </CheckoutSectionHeader>
 
       {!isActiveStep && (
         <>
-          {cart.shipping_methods?.length === 0 && <StripeSecurityImage className="mt-4" />}
           <dl>
             {cart.shipping_methods?.map((shippingMethod: BaseCartShippingMethod, shippingMethodIndex) => {
               const { id, shipping_option_id, amount } = shippingMethod;
@@ -97,10 +95,13 @@ export const CheckoutDeliveryMethod: FC = () => {
 
               return (
                 <Fragment key={id}>
-                  <dt className={`${shippingMethodIndex > 0 ? 'mt-6' : 'mt-4'} academia-label`}>
-                    Delivery Method
+                  <dt
+                    className={`${shippingMethodIndex > 0 ? 'mt-6' : 'mt-4'} text-[10px] font-semibold tracking-[0.2em] uppercase`}
+                    style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+                  >
+                    Pengiriman
                   </dt>
-                  <dd className="mt-1" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, fontSize: '1.1rem', color: '#E8DFD4', fontStyle: 'italic' }}>
+                  <dd className="mt-1 text-sm" style={{ fontFamily: 'var(--font-body)', color: '#3D2B1F' }}>
                     {shipping_option?.name} (
                     {formatPrice(amount, {
                       currency: cart?.region?.currency_code,
@@ -127,8 +128,8 @@ export const CheckoutDeliveryMethod: FC = () => {
                     {shippingOptionProfileIndex > 0 && <hr className="my-6" />}
 
                     {!!cart?.shipping_methods?.length && (
-                      <Alert type="info" className="my-6">
-                        Choose your delivery option
+                      <Alert type="info" className="my-4">
+                        Pilih metode pengiriman
                       </Alert>
                     )}
                     <ShippingOptionsRadioGroup

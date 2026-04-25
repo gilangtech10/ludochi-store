@@ -6,10 +6,17 @@ export const AddressDisplay: React.FC<{
   countryOptions: { value: string; label: string }[];
 }> = ({ title, address, countryOptions }) => (
   <span>
-    {title && <dt className="academia-label mt-4 mb-2 block">{title}</dt>}
+    {title && (
+      <dt
+        className="mt-2 mb-1.5 block text-[10px] font-semibold tracking-[0.2em] uppercase"
+        style={{ color: '#C47C3A', fontFamily: 'var(--font-label)' }}
+      >
+        {title}
+      </dt>
+    )}
     <dd
       className="mt-0.5 leading-relaxed"
-      style={{ fontFamily: 'var(--font-body)', color: 'rgba(232,223,212,0.75)', fontSize: '0.9rem' }}
+      style={{ fontFamily: 'var(--font-body)', color: '#7A5C4E', fontSize: '0.875rem' }}
     >
       {address?.company && (
         <>

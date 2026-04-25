@@ -3,7 +3,9 @@ import { defineConfig, loadEnv } from '@medusajs/framework/utils';
 loadEnv(process.env.NODE_ENV || 'development', process.cwd());
 
 const REDIS_URL = process.env.REDIS_URL;
-const STRIPE_API_KEY = process.env.STRIPE_API_KEY;
+const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY ?? '';
+const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY ?? '';
+const MIDTRANS_IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const IS_TEST = process.env.NODE_ENV === 'test';
 
 const cacheModule = IS_TEST
@@ -64,10 +66,12 @@ module.exports = defineConfig({
       options: {
         providers: [
           {
-            resolve: '@medusajs/medusa/payment-stripe',
-            id: 'stripe',
+            resolve: './src/modules/midtrans',
+            id: 'midtrans',
             options: {
-              apiKey: STRIPE_API_KEY,
+              serverKey: MIDTRANS_SERVER_KEY,
+              clientKey: MIDTRANS_CLIENT_KEY,
+              isProduction: MIDTRANS_IS_PRODUCTION,
             },
           },
         ],

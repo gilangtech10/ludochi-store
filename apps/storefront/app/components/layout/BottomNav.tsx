@@ -16,15 +16,15 @@ import clsx from 'clsx';
 import { Link, useLocation } from 'react-router';
 
 const NAV_ITEMS = [
-  { label: 'Home',      href: '/',         icon: HomeIcon,        activeIcon: HomeIconSolid },
-  { label: 'Menu',      href: '/products', icon: Squares2X2Icon,  activeIcon: Squares2X2Solid },
-  { label: 'Keranjang', href: null,         icon: ShoppingBagIcon, activeIcon: ShoppingBagSolid },
-  { label: 'Akun',      href: '/account',  icon: UserCircleIcon,  activeIcon: UserCircleSolid },
+  { label: 'Home',    href: '/',         icon: HomeIcon,        activeIcon: HomeIconSolid },
+  { label: 'Menu',    href: '/products', icon: Squares2X2Icon,  activeIcon: Squares2X2Solid },
+  { label: 'Pesanan', href: '/order',    icon: ShoppingBagIcon, activeIcon: ShoppingBagSolid },
+  { label: 'Akun',    href: '/account',  icon: UserCircleIcon,  activeIcon: UserCircleSolid },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
-  const { cart, toggleCartDrawer } = useCart();
+  const { cart } = useCart();
   const rootLoader = useRootLoaderData();
   const hasProducts = rootLoader?.hasPublishedProducts;
 
@@ -42,25 +42,31 @@ export const BottomNav = () => {
     >
       <div className="flex items-stretch h-[60px]">
         {NAV_ITEMS.map((item) => {
-          const isCart = item.href === null;
+          const isOrderTab = item.href === '/order';
 
-          if (isCart && !hasProducts) return null;
+          if (isOrderTab && !hasProducts) return null;
 
-          const isActive = !isCart && (
+          const isActive =
             item.href === '/'
               ? location.pathname === '/'
-              : location.pathname.startsWith(item.href!)
-          );
+              : location.pathname.startsWith(item.href);
 
           const Icon = isActive ? item.activeIcon : item.icon;
           const labelColor = isActive ? '#6B3A1F' : '#9C8070';
-          const iconColor = isActive ? '#6B3A1F' : '#9C8070';
+          const iconColor  = isActive ? '#6B3A1F' : '#9C8070';
 
-          const inner = (
-            <>
+          return (
+            <Link
+              key={item.label}
+              to={item.href}
+              prefetch="viewport"
+              className={clsx(
+                'relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:opacity-60',
+              )}
+            >
               <div className="relative">
                 <Icon className="w-5 h-5" style={{ color: iconColor }} />
-                {isCart && cartCount > 0 && (
+                {isOrderTab && cartCount > 0 && (
                   <span
                     className="absolute -top-1.5 -right-2 min-w-[16px] h-4 flex items-center justify-center px-1 text-[9px] font-bold rounded-full"
                     style={{ backgroundColor: '#C47C3A', color: '#FFFFFF', fontFamily: 'var(--font-label)' }}
@@ -81,35 +87,6 @@ export const BottomNav = () => {
                   style={{ backgroundColor: '#C47C3A' }}
                 />
               )}
-            </>
-          );
-
-          const baseClass = clsx(
-            'relative flex-1 flex flex-col items-center justify-center gap-0.5 transition-all duration-200 active:opacity-60',
-          );
-
-          if (isCart) {
-            return (
-              <button
-                key="cart"
-                onClick={() => toggleCartDrawer(true)}
-                className={baseClass}
-                aria-label="Buka keranjang"
-                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                {inner}
-              </button>
-            );
-          }
-
-          return (
-            <Link
-              key={item.label}
-              to={item.href!}
-              prefetch="viewport"
-              className={baseClass}
-            >
-              {inner}
             </Link>
           );
         })}

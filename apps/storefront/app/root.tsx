@@ -68,16 +68,25 @@ function App() {
     <RootProviders>
       <html lang="en" className="min-h-screen">
         <head ref={headRef}>
-          <meta charSet="UTF-8" />
-          <Meta />
+           <meta charSet="UTF-8" />
+           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+           <meta name="theme-color" content="#3D2B1F" />
+           <meta name="apple-mobile-web-app-capable" content="yes" />
+           <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+           <meta name="apple-mobile-web-app-title" content="LuDo-Chi" />
+           <meta name="mobile-web-app-capable" content="yes" />
+           <meta name="application-name" content="LuDo-Chi" />
+           <link rel="manifest" href="/manifest.json" />
+           <link rel="apple-touch-icon" href="/logo.jpeg" />
+           <Meta />
 
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap"
-            rel="stylesheet"
-          />
-          <Links />
+           <link rel="preconnect" href="https://fonts.googleapis.com" />
+           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+           <link
+             href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap"
+             rel="stylesheet"
+           />
+           <Links />
           {siteDetails?.settings?.description && <meta name="description" content={siteDetails.settings.description} />}
         </head>
         <body className="min-h-screen">
