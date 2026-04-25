@@ -81,6 +81,10 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
           error: `${this.storefrontUrl}/checkout?error=payment_failed`,
           pending: `${this.storefrontUrl}/checkout?status=pending`,
         },
+        gopay: {
+          enable_callback: true,
+          callback_url: `${this.storefrontUrl}/checkout/success?order_id=${orderId}`,
+        },
       }),
     });
     if (!res.ok) {
