@@ -27,6 +27,7 @@ type MidtransOptions = {
   serverKey: string;
   clientKey: string;
   isProduction?: boolean;
+  storefrontUrl?: string;
 };
 
 class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOptions> {
@@ -34,6 +35,7 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
 
   private serverKey: string;
   private clientKey: string;
+  private storefrontUrl: string;
   private snapBaseUrl: string;
   private coreBaseUrl: string;
 
@@ -41,6 +43,7 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
     super(container, options);
     this.serverKey = options.serverKey;
     this.clientKey = options.clientKey;
+    this.storefrontUrl = options.storefrontUrl ?? 'http://localhost:3000';
     const prod = options.isProduction ?? false;
     this.snapBaseUrl = prod
       ? 'https://app.midtrans.com/snap/v1'
@@ -72,6 +75,11 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
           first_name: customer?.firstName ?? '',
           last_name: customer?.lastName ?? '',
           email: customer?.email ?? '',
+        },
+        callbacks: {
+          finish: `${this.storefrontUrl}/checkout/success?order_id=${orderId}`,
+          error: `${this.storefrontUrl}/checkout?error=payment_failed`,
+          pending: `${this.storefrontUrl}/checkout?status=pending`,
         },
       }),
     });

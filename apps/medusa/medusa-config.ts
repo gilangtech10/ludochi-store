@@ -5,6 +5,7 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd());
 const REDIS_URL = process.env.REDIS_URL;
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY ?? '';
 const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY ?? '';
+const STOREFRONT_URL = process.env.STOREFRONT_URL ?? 'http://localhost:3000';
 const MIDTRANS_IS_PRODUCTION = false; // FORCE SANDBOX — ganti ke true hanya untuk production
 const IS_TEST = process.env.NODE_ENV === 'test';
 
@@ -66,6 +67,7 @@ module.exports = defineConfig({
               serverKey: MIDTRANS_SERVER_KEY,
               clientKey: MIDTRANS_CLIENT_KEY,
               isProduction: MIDTRANS_IS_PRODUCTION,
+              storefrontUrl: STOREFRONT_URL,
             },
           },
         ],
