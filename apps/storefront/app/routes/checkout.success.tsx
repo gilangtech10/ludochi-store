@@ -2,6 +2,8 @@ import { Image } from '@app/components/common/images/Image';
 import { formatPhoneNumber } from '@libs/util/phoneNumber';
 import { formatPrice } from '@libs/util/prices';
 import { retrieveOrder } from '@libs/util/server/data/orders.server';
+import { sdk } from '@libs/util/server/client.server';
+import { getAuthHeaders } from '@libs/util/server/auth.server';
 import { StoreOrder } from '@medusajs/types';
 import { LoaderFunctionArgs, redirect } from 'react-router';
 import { Link, useLoaderData } from 'react-router';
@@ -20,10 +22,35 @@ const stagger: Variants = {
 
 export const loader = async ({ request }: LoaderFunctionArgs): Promise<{ order: StoreOrder }> => {
   const url = new URL(request.url);
+  const authHeaders = await getAuthHeaders(request);
+  
+  // Try order_id first (direct Medusa order ID)
   const orderId = url.searchParams.get('order_id') || '';
-  if (!orderId) throw redirect('/');
-  const order = await retrieveOrder(request, orderId);
-  return { order };
+  if (orderId) {
+    try {
+      const order = await retrieveOrder(request, orderId);
+      return { order };
+    } catch {
+      // Fall through to cart_id lookup
+    }
+  }
+  
+  // Try cart_id (Midtrans callback uses cart ID as order_id)
+  const cartId = url.searchParams.get('cart_id') || '';
+  if (cartId) {
+    try {
+      const { cart } = await sdk.store.cart.retrieve(cartId, {}, authHeaders);
+      const cartWithOrder = cart as typeof cart & { order?: { id: string } };
+      if (cartWithOrder?.order?.id) {
+        const order = await retrieveOrder(request, cartWithOrder.order.id);
+        return { order };
+      }
+    } catch {
+      // Cart not found or no order yet
+    }
+  }
+  
+  throw redirect('/');
 };
 
 export default function CheckoutSuccessRoute() {

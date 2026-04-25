@@ -77,7 +77,7 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
           email: customer?.email ?? '',
         },
         callbacks: {
-          finish: `${this.storefrontUrl}/checkout/success?order_id=${orderId}`,
+          finish: `${this.storefrontUrl}/checkout/success?cart_id=${orderId}`,
           error: `${this.storefrontUrl}/checkout?error=payment_failed`,
           pending: `${this.storefrontUrl}/checkout?status=pending`,
         },
@@ -124,7 +124,8 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
 
   async initiatePayment(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     const amount = Number(input.amount);
-    const orderId = `LUDOCHI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const cartId = ((input.context as any)?.cart as { id?: string } | undefined)?.id;
+    const orderId = cartId || `LUDOCHI-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const customer = input.context?.customer as
       | { first_name?: string; last_name?: string; email?: string }
       | undefined;
