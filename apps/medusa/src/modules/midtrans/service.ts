@@ -132,7 +132,7 @@ class MidtransPaymentProviderService extends AbstractPaymentProvider<MidtransOpt
     });
 
     return {
-      id: snap.token,
+      id: orderId, // PaymentSession ID = Midtrans order_id (supaya webhook bisa match)
       data: {
         snap_token: snap.token,
         snap_redirect_url: snap.redirect_url,
