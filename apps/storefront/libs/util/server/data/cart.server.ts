@@ -36,7 +36,7 @@ export const getOrCreateCart = withAuthHeaders(async (request, authHeaders) => {
   }
 
   if (!cart) {
-    const cartResp = await sdk.store.cart.create({ region_id: region.id });
+    const cartResp = await sdk.store.cart.create({ region_id: region.id }, {}, authHeaders);
     cart = cartResp.cart;
   }
 
@@ -93,14 +93,14 @@ export const addToCart = withAuthHeaders(
   },
 );
 
-export const ensureStripePaymentSession = async (request: Request, cart: StoreCart): Promise<StoreCart> => {
+export const ensureMidtransPaymentSession = async (request: Request, cart: StoreCart): Promise<StoreCart> => {
   if (!cart) throw new Error('Cart was not provided.');
 
   let activeSession = cart.payment_collection?.payment_sessions?.find((session) => session.status === 'pending');
 
   if (!activeSession) {
     await initiatePaymentSession(request, cart, {
-      provider_id: 'pp_stripe_stripe',
+      provider_id: 'pp_midtrans_midtrans',
     });
 
     return (await retrieveCart(request))!;

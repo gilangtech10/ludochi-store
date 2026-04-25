@@ -21,6 +21,10 @@ export const baseMedusaConfig = {
 
 export const sdk = new Medusa({
   ...baseMedusaConfig,
+  auth: {
+    type: 'jwt',
+    jwtTokenStorageMethod: 'nostore',
+  },
 });
 
 export const sdkCache = buildNewLRUCache({ max: 1000 });

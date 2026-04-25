@@ -52,10 +52,10 @@ export async function action(actionArgs: ActionFunctionArgs) {
 
   try {
     await initiatePaymentSession(actionArgs.request, updatedCart, {
-      provider_id: 'pp_stripe_stripe',
+      provider_id: 'pp_midtrans_midtrans',
     });
   } catch (e) {
-    console.warn('Could not initiate Stripe payment session after shipping update:', e);
+    console.warn('Could not initiate Midtrans payment session after shipping update:', e);
   }
 
   const cart = (await retrieveCart(actionArgs.request)) as StoreCart;
