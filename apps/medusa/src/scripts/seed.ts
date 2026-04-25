@@ -1,6 +1,5 @@
 import {
   createApiKeysWorkflow,
-  createOrderWorkflow,
   createProductCategoriesWorkflow,
   createProductTagsWorkflow,
   createProductsWorkflow,
@@ -14,7 +13,6 @@ import {
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresWorkflow,
 } from '@medusajs/core-flows';
-import type { IPaymentModuleService } from '@medusajs/framework/types';
 import { ContainerRegistrationKeys, Modules } from '@medusajs/framework/utils';
 import { createCollectionsWorkflow } from '@medusajs/medusa/core-flows';
 import type {
@@ -32,11 +30,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService: ISalesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService: IStoreModuleService = container.resolve(Modules.STORE);
 
-  const paymentModuleService: IPaymentModuleService = container.resolve(Modules.PAYMENT);
-
-  const canadianCountries = ['ca'];
-  const americanCountries = ['us'];
-  const allCountries = [...canadianCountries, ...americanCountries];
+  const indonesianCountries = ['id'];
 
   logger.info('Seeding store data...');
 
@@ -46,7 +40,6 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   if (!defaultSalesChannel.length) {
-    // create the default sales channel
     const { result: salesChannelResult } = await createSalesChannelsWorkflow(container).run({
       input: {
         salesChannelsData: [
@@ -65,11 +58,8 @@ export default async function seedDemoData({ container }: ExecArgs) {
       update: {
         supported_currencies: [
           {
-            currency_code: 'usd',
+            currency_code: 'idr',
             is_default: true,
-          },
-          {
-            currency_code: 'cad',
           },
         ],
         default_sales_channel_id: defaultSalesChannel[0].id,
@@ -82,26 +72,20 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       regions: [
         {
-          name: 'United States',
-          currency_code: 'usd',
-          countries: americanCountries,
-        },
-        {
-          name: 'Canada',
-          currency_code: 'cad',
-          countries: canadianCountries,
+          name: 'Indonesia',
+          currency_code: 'idr',
+          countries: indonesianCountries,
         },
       ],
     },
   });
-  const usRegion = regionResult[0];
-  const caRegion = regionResult[1];
+  const idRegion = regionResult[0];
   logger.info('Finished seeding regions.');
 
   logger.info('Seeding tax regions...');
 
   await createTaxRegionsWorkflow(container).run({
-    input: allCountries.map((country_code) => ({
+    input: indonesianCountries.map((country_code) => ({
       country_code,
     })),
   });
@@ -114,25 +98,24 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       locations: [
         {
-          name: 'South Lamar Location',
+          name: 'Sunter Jaya',
           address: {
-            city: 'Austin',
-            country_code: 'US',
-            province: 'TX',
-            address_1: '1200 S Lamar Blvd',
-            postal_code: '78704',
+            city: 'Jakarta Utara',
+            country_code: 'ID',
+            province: 'DKI Jakarta',
+            address_1: 'Jl. Sunter Jaya',
+            postal_code: '14350',
           },
         },
       ],
     },
   });
-  // const europeanStockLocation = stockLocationResult[0];
-  const americanStockLocation = stockLocationResult[0];
+  const indonesianStockLocation = stockLocationResult[0];
 
   await remoteLink.create([
     {
       [Modules.STOCK_LOCATION]: {
-        stock_location_id: americanStockLocation.id,
+        stock_location_id: indonesianStockLocation.id,
       },
       [Modules.FULFILLMENT]: {
         fulfillment_provider_id: 'manual_manual',
@@ -154,24 +137,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   const shippingProfile = shippingProfileResult[0];
 
-  const northAmericanFulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: 'North American delivery',
+  const indonesianFulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
+    name: 'Indonesian delivery',
     type: 'shipping',
     service_zones: [
       {
-        name: 'United States',
+        name: 'Indonesia',
         geo_zones: [
           {
-            country_code: 'us',
-            type: 'country',
-          },
-        ],
-      },
-      {
-        name: 'Canada',
-        geo_zones: [
-          {
-            country_code: 'ca',
+            country_code: 'id',
             type: 'country',
           },
         ],
@@ -181,10 +155,10 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   await remoteLink.create({
     [Modules.STOCK_LOCATION]: {
-      stock_location_id: americanStockLocation.id,
+      stock_location_id: indonesianStockLocation.id,
     },
     [Modules.FULFILLMENT]: {
-      fulfillment_set_id: northAmericanFulfillmentSet.id,
+      fulfillment_set_id: indonesianFulfillmentSet.id,
     },
   });
 
@@ -213,29 +187,21 @@ export default async function seedDemoData({ container }: ExecArgs) {
         name: 'Standard Shipping',
         price_type: 'flat',
         provider_id: 'manual_manual',
-        service_zone_id: northAmericanFulfillmentSet.service_zones[0].id,
+        service_zone_id: indonesianFulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: 'Standard',
-          description: 'Ship in 2-3 days.',
+          description: 'Pengiriman 2-3 hari.',
           code: 'standard',
         },
         prices: [
           {
-            currency_code: 'usd',
-            amount: 5,
+            currency_code: 'idr',
+            amount: 15000,
           },
           {
-            currency_code: 'cad',
-            amount: 5,
-          },
-          {
-            region_id: usRegion.id,
-            amount: 5,
-          },
-          {
-            region_id: caRegion.id,
-            amount: 5,
+            region_id: idRegion.id,
+            amount: 15000,
           },
         ],
         rules: [
@@ -255,29 +221,21 @@ export default async function seedDemoData({ container }: ExecArgs) {
         name: 'Express Shipping',
         price_type: 'flat',
         provider_id: 'manual_manual',
-        service_zone_id: northAmericanFulfillmentSet.service_zones[0].id,
+        service_zone_id: indonesianFulfillmentSet.service_zones[0].id,
         shipping_profile_id: shippingProfile.id,
         type: {
           label: 'Express',
-          description: 'Ship in 24 hours.',
+          description: 'Pengiriman same-day.',
           code: 'express',
         },
         prices: [
           {
-            currency_code: 'usd',
-            amount: 10,
+            currency_code: 'idr',
+            amount: 35000,
           },
           {
-            currency_code: 'cad',
-            amount: 10,
-          },
-          {
-            region_id: usRegion.id,
-            amount: 10,
-          },
-          {
-            region_id: caRegion.id,
-            amount: 10,
+            region_id: idRegion.id,
+            amount: 35000,
           },
         ],
         rules: [
@@ -300,7 +258,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
     input: {
-      id: americanStockLocation.id,
+      id: indonesianStockLocation.id,
       add: [defaultSalesChannel[0].id],
     },
   });
