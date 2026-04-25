@@ -5,7 +5,7 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd());
 const REDIS_URL = process.env.REDIS_URL;
 const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY ?? '';
 const MIDTRANS_CLIENT_KEY = process.env.MIDTRANS_CLIENT_KEY ?? '';
-const MIDTRANS_IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const MIDTRANS_IS_PRODUCTION = false; // FORCE SANDBOX — ganti ke true hanya untuk production
 const IS_TEST = process.env.NODE_ENV === 'test';
 
 const cacheModule = IS_TEST
