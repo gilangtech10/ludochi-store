@@ -85,13 +85,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
           name: 'United States',
           currency_code: 'usd',
           countries: americanCountries,
-          payment_providers: ['pp_stripe_stripe'],
         },
         {
           name: 'Canada',
           currency_code: 'cad',
           countries: canadianCountries,
-          payment_providers: ['pp_stripe_stripe'],
         },
       ],
     },

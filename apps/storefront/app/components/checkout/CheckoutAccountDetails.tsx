@@ -18,7 +18,7 @@ import { RemixFormProvider, useRemixForm } from 'remix-hook-form';
 import { FormError } from '../common/remix-hook-form/forms/FormError';
 import { CheckoutSectionHeader } from './CheckoutSectionHeader';
 import HiddenAddressGroup from './HiddenAddressGroup';
-import { MedusaStripeAddress, type StripeAddress } from './MedusaStripeAddress/MedusaStripeAddress';
+import { AddressForm, type AddressFormData } from './AddressForm/AddressForm';
 import { AddressDisplay } from './address/AddressDisplay';
 import { selectInitialShippingAddress } from './checkout-form-helpers';
 
@@ -109,7 +109,7 @@ export const CheckoutAccountDetails = () => {
     );
   };
 
-  const setAddr = (a: StripeAddress) => {
+  const setAddr = (a: AddressFormData) => {
     (Object.entries(a.address) as [string, string][]).forEach(([k, v]) =>
       form.setValue(`shippingAddress.${k}` as any, v ?? ''),
     );
@@ -235,7 +235,7 @@ export const CheckoutAccountDetails = () => {
 
             {/* Address form — shown for new address or when no saved addresses */}
             {(isNew || savedAddresses.length === 0) && (
-              <MedusaStripeAddress mode="shipping" address={shippingAddress} setAddress={setAddr} />
+              <AddressForm mode="shipping" address={shippingAddress} setAddress={setAddr} />
             )}
 
             <HiddenAddressGroup address={shippingAddress} prefix="shippingAddress" />

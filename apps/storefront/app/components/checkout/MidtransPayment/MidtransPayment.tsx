@@ -15,10 +15,10 @@ import { FormError } from '@app/components/common/remix-hook-form/forms/FormErro
 import { Checkbox, TextField } from '@lambdacurry/forms/remix-hook-form';
 import { CheckoutOrderSummary } from '../CheckoutOrderSummary';
 import {
-  MedusaStripeAddress,
-  defaultStripeAddress,
-  type StripeAddress,
-} from '../MedusaStripeAddress/MedusaStripeAddress';
+  AddressForm,
+  defaultAddressData,
+  type AddressFormData,
+} from '../AddressForm/AddressForm';
 import { AddressDisplay } from '../address/AddressDisplay';
 
 declare global {
@@ -85,7 +85,7 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
   if (!cart) return null;
 
   const defaultBillingAddress = medusaAddressToAddress(cart.billing_address as MedusaAddress);
-  const shippingAddress = defaultStripeAddress(cart?.shipping_address) ?? { address: defaultBillingAddress, completed: false };
+  const shippingAddress = defaultAddressData(cart?.shipping_address) ?? { address: defaultBillingAddress, completed: false };
 
   const countryOptions =
     (cart.region?.countries?.map((c) => ({ value: c.iso_2, label: c.display_name })) as {
@@ -112,7 +112,7 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
   const billingAddress = form.watch('billingAddress');
   const hasShippingMethod = (cart.shipping_methods?.length ?? 0) > 0;
 
-  const setBillingAddress = (addr: StripeAddress) => {
+  const setBillingAddress = (addr: AddressFormData) => {
     form.setValue('billingAddress.address1', addr.address.address1 ?? '');
     form.setValue('billingAddress.address2', addr.address.address2 ?? '');
     form.setValue('billingAddress.city', addr.address.city ?? '');
@@ -224,7 +224,7 @@ export const MidtransPayment: FC<MidtransPaymentProps> = ({ isActiveStep }) => {
         <Checkbox className="mb-3" name="sameAsShipping" label="Sama dengan alamat pengiriman" />
 
         {!sameAsShipping && (
-          <MedusaStripeAddress
+          <AddressForm
             mode="billing"
             address={billingAddress}
             setAddress={setBillingAddress}

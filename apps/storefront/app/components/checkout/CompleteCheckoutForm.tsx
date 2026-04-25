@@ -12,10 +12,10 @@ import { CheckoutOrderSummary } from '.';
 import { FormError } from '../common/remix-hook-form/forms/FormError';
 import HiddenAddressGroup from './HiddenAddressGroup';
 import {
-  MedusaStripeAddress,
-  type StripeAddress,
-  defaultStripeAddress,
-} from './MedusaStripeAddress/MedusaStripeAddress';
+  AddressForm,
+  type AddressFormData,
+  defaultAddressData,
+} from './AddressForm/AddressForm';
 import { AddressDisplay } from './address/AddressDisplay';
 
 export interface CompleteCheckoutFormProps extends PropsWithChildren {
@@ -62,7 +62,7 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
   if (!cart) return null;
 
   const defaultBillingAddress = medusaAddressToAddress(cart.billing_address as MedusaAddress);
-  const shippingAddress = defaultStripeAddress(cart?.shipping_address) ?? emptyAddress;
+  const shippingAddress = defaultAddressData(cart?.shipping_address) ?? emptyAddress;
 
   const countryOptions =
     (cart.region?.countries?.map((country) => ({
@@ -108,7 +108,7 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
     return form.handleSubmit();
   };
 
-  const setBillingAddress = (address: StripeAddress) => {
+  const setBillingAddress = (address: AddressFormData) => {
     form.setValue('billingAddress.address1', address.address.address1 ?? '');
     form.setValue('billingAddress.address2', address.address.address2 ?? '');
     form.setValue('billingAddress.city', address.address.city ?? '');
@@ -160,7 +160,7 @@ export const CompleteCheckoutForm: FC<CompleteCheckoutFormProps> = ({
           <Checkbox className="my-3" name="sameAsShipping" label="Sama dengan alamat pengiriman" />
 
           {!sameAsShipping && (
-            <MedusaStripeAddress mode="billing" address={billingAddress} setAddress={setBillingAddress} />
+            <AddressForm mode="billing" address={billingAddress} setAddress={setBillingAddress} />
           )}
 
           <HiddenAddressGroup address={billingAddress} prefix="billingAddress" />

@@ -2,12 +2,12 @@ import { Address } from '@libs/types';
 import { BaseCartAddress } from '@medusajs/types/dist/http/cart/common';
 import { type FC, useCallback } from 'react';
 
-export interface StripeAddress {
+export interface AddressFormData {
   address: Address;
   completed: boolean;
 }
 
-export const defaultStripeAddress = (address?: BaseCartAddress | null | undefined): StripeAddress => ({
+export const defaultAddressData = (address?: BaseCartAddress | null | undefined): AddressFormData => ({
   address: {
     firstName: address?.first_name || '',
     lastName: address?.last_name || '',
@@ -27,7 +27,7 @@ interface AddressFormProps {
   address: Address;
   mode?: string;
   allowedCountries?: string[];
-  setAddress: (address: StripeAddress) => void;
+  setAddress: (address: AddressFormData) => void;
 }
 
 const fieldStyle = {
@@ -53,7 +53,7 @@ const labelStyle = {
   fontFamily: 'var(--font-label)',
 };
 
-export const MedusaStripeAddress: FC<AddressFormProps> = ({ title, address, setAddress }) => {
+export const AddressForm: FC<AddressFormProps> = ({ title, address, setAddress }) => {
   const update = useCallback(
     (field: keyof Address, value: string) => {
       const updated: Address = { ...address, [field]: value };
